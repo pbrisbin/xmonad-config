@@ -8,9 +8,8 @@
 -- Stability   :  unstable
 -- Portability :  unportable
 --
--- Up to date [testing], using -darcs, last modified 26 October 2010.
+-- Now available in git http://github.com/pbrisbin/xmonad-config
 --
--- vim:foldmethod=marker foldmarker={{{,}}}
 -------------------------------------------------------------------------------
 
 -- Imports {{{
