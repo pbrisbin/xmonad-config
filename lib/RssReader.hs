@@ -248,8 +248,7 @@ stripBetween c1 c2  (x:xs) =
 
 -- | given a width and (possibly infinite) list, it will work out a list
 --   of shorter lists that, when viewed one by one successively, appear
---   as the original list rolling by left to right (like a stock
---   ticker)
+--   as the original list rolling by right to left (like a stock ticker)
 tickerText :: Int -> [a] -> [[a]]
 tickerText _ []     = []
 tickerText w (x:xs) = (x : take (w - 1) xs) : tickerText w xs
