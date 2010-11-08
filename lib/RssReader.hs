@@ -134,8 +134,8 @@ readFeed conf url = do
                          link        = fix $ getText "link"        [] i
                          pubDate     = fix $ getText "pubDate"     [] i
                          description = fix $ getText "description" [] i
-                     -- need all parts to be a real item
-                     in if all (/= "") [title, link, pubDate, description]
+                     -- required parts to be usable
+                     in if all (/= "") [title, link, description]
                             then Just $ RssItem pubDate title link description
                             else Nothing
 
