@@ -320,9 +320,9 @@ myKeys = [ ("M-p"                   , spawn "launcher"               ) -- dmenu 
          , ("M4-l"                  , myLock                         ) -- W-l to lock screen
          , ("M4-i"                  , myIRC                          ) -- open/attach IRC client in screen
          , ("M4-r"                  , myTorrents                     ) -- open/attach rtorrent in screen 
-         , ("M-a"                   , spawn "msearch all"            ) -- search current playlist via dmenu
-         , ("M-g"                   , spawn "goodsong"               ) -- note current song as 'good'
-         , ("M-S-g"                 , spawn "goodsong -p"            ) -- play a random 'good' song
+         , ("M4-a"                  , spawn "msearch all"            ) -- search current playlist via dmenu
+         , ("M4-g"                  , spawn "goodsong"               ) -- note current song as 'good'
+         , ("M4-S-g"                , spawn "goodsong -p"            ) -- play a random 'good' song
          , ("<Print>"               , spawn "sshot"                  ) -- take a screenshot
 
          -- extended workspace navigations
