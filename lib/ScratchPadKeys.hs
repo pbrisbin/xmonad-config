@@ -73,6 +73,11 @@ import qualified XMonad.StackSet as W
 -- one(s) provided by this module.
 --
 
+-- | This is used in some of the builtin terms, feel free to update if
+--   you plan on using those in your config
+myTerminal :: String
+myTerminal = "urxvtc"
+
 -- | A single scratchpad definition
 data ScratchPad = ScratchPad
     { keybind :: String     -- ^ The keybind to use in EZConfig notation, ex: \"M4-t\"
@@ -133,7 +138,7 @@ scratchMixer = ScratchPad
 scratchMusic :: ScratchPad
 scratchMusic = ScratchPad
     { keybind  = "M4-n"
-    , cmd      = "urxvtc -name sp-ncmpcpp -e ncmpcpp"
+    , cmd      = myTerminal ++ " -name sp-ncmpcpp -e ncmpcpp"
     , query    = resource =? "sp-ncmpcpp"
     , hook     = centerScreen 0.65
     }
@@ -142,7 +147,7 @@ scratchMusic = ScratchPad
 scratchTop :: ScratchPad
 scratchTop = ScratchPad
     { keybind = "M4-h"
-    , cmd     = "urxvtc -name sp-htop -e htop"
+    , cmd     = myTerminal ++ " -name sp-htop -e htop"
     , query   = resource =? "sp-htop"
     , hook    = centerScreen 0.65
     }
@@ -151,7 +156,7 @@ scratchTop = ScratchPad
 scratchTerminal :: ScratchPad
 scratchTerminal = ScratchPad
     { keybind  = "M4-t"
-    , cmd      = "urxvtc -name sp-term"
+    , cmd      = myTerminal ++ " -name sp-term"
     , query    = resource =? "sp-term"
     , hook     = bottomEdge 0.15
     }
