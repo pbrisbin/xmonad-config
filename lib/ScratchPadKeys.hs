@@ -13,6 +13,10 @@
 -- generated in /EZConfig/ notation for the scratchpads in the list and
 -- an overall managehook is generated exactly as in the NamedScratchpad
 -- module.
+-- 
+-- The command record is also an X () and not a String, this allows me
+-- to pre define some scratchpads here which will auto-magically use
+-- your user-defined terminal.
 --
 -------------------------------------------------------------------------------
 
@@ -23,6 +27,7 @@ module ScratchPadKeys (
     manageScratchPads,
     scratchPadKeys,
     spawnScratchpad,
+    runInTerminal,
     -- * Scrachpads
     -- $scratchpads
     scratchPadList,
@@ -73,18 +78,17 @@ import qualified XMonad.StackSet as W
 -- one(s) provided by this module.
 --
 
--- | This is used in some of the builtin terms, feel free to update if
---   you plan on using those in your config
-myTerminal :: String
-myTerminal = "urxvtc"
-
 -- | A single scratchpad definition
 data ScratchPad = ScratchPad
     { keybind :: String     -- ^ The keybind to use in EZConfig notation, ex: \"M4-t\"
-    , cmd     :: String     -- ^ The command to spawn the application
+    , cmd     :: X ()       -- ^ The X action to take ex: spawn \"myapp\"
     , query   :: Query Bool -- ^ The query to find it once it's spawned
     , hook    :: ManageHook -- ^ the way to manage it when it's visible
     }
+
+-- | A helper to execute a command using the user's defined terminal
+runInTerminal :: [String] -> X ()
+runInTerminal args = asks config >>= \c@XConfig { terminal = t } -> spawn $ unwords (t:args)
 
 -- | Produce a managehook to manage all scratchpads in the passed list
 manageScratchPads :: [ScratchPad] -> ManageHook
@@ -92,7 +96,7 @@ manageScratchPads = composeAll . fmap (\c -> query c --> hook c)
 
 -- | Produce a list of keybinds in /EZConfig/ notation for all
 --   scratchpads in the passed list
-scratchPadKeys :: [ScratchPad] -> [(String, X())]
+scratchPadKeys :: [ScratchPad] -> [(String, X ())]
 scratchPadKeys = fmap (keybind &&& spawnScratchpad)
 
 -- | Summon, banish, or spawn a single 'ScratchPad'
@@ -113,7 +117,7 @@ spawnScratchpad sp = withWindowSet $ \s -> do
 
             case filterAll of
                 (x:_) -> windows $ W.shiftWin (W.currentTag s) x
-                []    -> spawn $ cmd sp
+                []    -> cmd sp
 
 -- $scratchpads
 --
@@ -129,7 +133,7 @@ scratchPadList = [scratchMixer, scratchMusic, scratchTop, scratchTerminal]
 scratchMixer :: ScratchPad
 scratchMixer = ScratchPad
     { keybind  = "M4-x"
-    , cmd      = "ossxmix"
+    , cmd      = spawn "ossxmix"
     , query    = className =? "Ossxmix"
     , hook     = centerScreen 0.65
     }
@@ -138,7 +142,7 @@ scratchMixer = ScratchPad
 scratchMusic :: ScratchPad
 scratchMusic = ScratchPad
     { keybind  = "M4-n"
-    , cmd      = myTerminal ++ " -name sp-ncmpcpp -e ncmpcpp"
+    , cmd      = runInTerminal ["-name", "sp-ncmpcpp", "-e", "ncmpcpp"]
     , query    = resource =? "sp-ncmpcpp"
     , hook     = centerScreen 0.65
     }
@@ -147,7 +151,7 @@ scratchMusic = ScratchPad
 scratchTop :: ScratchPad
 scratchTop = ScratchPad
     { keybind = "M4-h"
-    , cmd     = myTerminal ++ " -name sp-htop -e htop"
+    , cmd     = runInTerminal ["-name", "sp-htop", "-e", "htop"]
     , query   = resource =? "sp-htop"
     , hook    = centerScreen 0.65
     }
@@ -156,7 +160,7 @@ scratchTop = ScratchPad
 scratchTerminal :: ScratchPad
 scratchTerminal = ScratchPad
     { keybind  = "M4-t"
-    , cmd      = myTerminal ++ " -name sp-term"
+    , cmd      = runInTerminal ["-name", "sp-term"]
     , query    = resource =? "sp-term"
     , hook     = bottomEdge 0.15
     }
