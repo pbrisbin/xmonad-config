@@ -31,7 +31,7 @@ module ScratchPadKeys (
     -- * Scrachpads
     -- $scratchpads
     scratchPadList,
-    scratchMixer, scratchMusic,
+    scratchMail, scratchMixer, scratchMusic,
     scratchTerminal, scratchTop,
     -- * ManageHooks
     -- $managehooks
