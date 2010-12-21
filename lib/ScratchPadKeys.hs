@@ -127,7 +127,7 @@ spawnScratchpad sp = withWindowSet $ \s -> do
 
 -- | All here-defined scratchpads in a list
 scratchPadList :: [ScratchPad]
-scratchPadList = [scratchMixer, scratchMusic, scratchTop, scratchTerminal]
+scratchPadList = [scratchMixer, scratchMail, scratchMusic, scratchTop, scratchTerminal]
 
 -- | ossxmix center screen
 scratchMixer :: ScratchPad
@@ -136,6 +136,17 @@ scratchMixer = ScratchPad
     , cmd      = spawn "ossxmix"
     , query    = className =? "Ossxmix"
     , hook     = centerScreen 0.65
+    }
+
+-- todo: abstract out repeated code on all the in-term scratchpads...
+
+-- | mutt center screen
+scratchMail :: ScratchPad
+scratchMail = ScratchPad
+    { keybind = "M4-m"
+    , cmd     = runInTerminal ["-name", "sp-mutt", "-e", "mutt"]
+    , query   = resource =? "sp-mutt"
+    , hook    = centerScreen 0.65
     }
 
 -- | ncmpcpp center screen

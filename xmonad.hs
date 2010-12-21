@@ -314,7 +314,6 @@ myKeys :: [(String, X())]
 myKeys = [ ("M-p"                   , spawn "launcher"               ) -- dmenu app launcher
          , ("M-S-p"                 , spawn "bashrun"                ) -- gmrun replacement
          , ("M4-f"                  , sendFile                       ) -- prompt for and send a file via mutt
-         , ("M4-m"                  , myMail                         ) -- open mail client
          , ("M4-b"                  , myBrowser                      ) -- open web client
          , ("M4-e"                  , myEject                        ) -- open/close tray 
          , ("M4-l"                  , myLock                         ) -- W-l to lock screen
@@ -380,7 +379,6 @@ myKeys = [ ("M-p"                   , spawn "launcher"               ) -- dmenu 
         myBrowser  = spawn "$BROWSER"
         myLock     = spawn "slock"
         myEject    = spawn "eject -T"
-        myMail     = spawn $ myTerminal ++ " -e mutt"
 
         -- see http://pbrisbin.com/xmonad/docs/SendFile.html
         sendFile   = sendFilePrompt promptConfig "~/.mutt/alias"
