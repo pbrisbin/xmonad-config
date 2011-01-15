@@ -325,7 +325,7 @@ myKeys = [ ("M-p"                   , spawn "launcher"               ) -- dmenu 
          , ("<Print>"               , spawn "sshot"                  ) -- take a screenshot
 
          -- extended workspace navigations
-         , ("M-`"                   , toggleWS                       ) -- switch to the most recently viewed ws
+         , ("M-<Esc>"               , toggleWS                       ) -- switch to the most recently viewed ws
          , ("M-<Backspace>"         , focusUrgent                    ) -- focus most recently urgent window
          , ("M-S-<Backspace>"       , clearUrgents                   ) -- make urgents go away
          , ("M-0"                   , viewEmptyWorkspace             ) -- go to next empty workspace
