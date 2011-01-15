@@ -30,7 +30,7 @@ import XMonad.Actions.FindEmptyWorkspace (tagToEmptyWorkspace, viewEmptyWorkspac
 import XMonad.Actions.GroupNavigation    (Direction(..), historyHook, nextMatch)
 import XMonad.Actions.Warp               (Corner(..), banishScreen)
 import XMonad.Actions.WithAll            (killAll)
-import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.DynamicLog hiding    (dzen)
 import XMonad.Hooks.EwmhDesktops         (ewmh)
 import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.ManageDocks
@@ -64,7 +64,7 @@ main = do
     d <- spawnDzen myLeftBar
 
     spawn "conky"
-    spawn $ "conky -c ~/.dzen_conkyrc | " ++ show myRightBar
+    spawn $ "conky -c ~/.dzen_conkyrc | " ++ dzen myRightBar
     spawnDzen myRssBar >>= spawnReader myReaderConf
 
     -- ewmh just makes wmctrl work
