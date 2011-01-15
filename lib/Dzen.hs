@@ -16,13 +16,16 @@
 module Dzen (
     -- * Usage
     -- $usage
-    DzenConf(..), TextAlign(..),
+    DzenConf(..), 
+    TextAlign(..), 
     defaultDzen, 
-    dzenArgs, spawnDzen
+    dzen, 
+    spawnDzen
     ) where
 
 import System.IO       (Handle)
 import XMonad.Util.Run (spawnPipe)
+
 
 -- $usage
 --
@@ -51,17 +54,8 @@ import XMonad.Util.Run (spawnPipe)
 -- If you just want to spawn a dzen and don't care about its handle you
 -- can use the following:
 --
--- > spawn $ show defaultDzen
+-- > dzen >>= spawn
 --
-
--- | A simple data type for the text alignment of the dzen bar
-data TextAlign = LeftAlign | RightAlign | Centered
-
--- | 'show' 'TextAlign' makes it suitable for use as a dzen argument
-instance Show TextAlign where
-    show LeftAlign  = "l"
-    show RightAlign = "r"
-    show Centered   = "c"
 
 -- | A data type to fully describe a spawnable dzen bar, take a look at
 --   @\/usr\/share\/doc\/dzen2\/README@ to see what input is acceptable
@@ -78,11 +72,16 @@ data DzenConf = DzenConf
     , addargs    :: [String]  -- ^ additional arguments, ex: [\"-p\", \"-tw\", \"5\"]
     }
 
--- | 'show' 'DzenConf' will give you a proper executable
-instance Show DzenConf where
-    show d = unwords $ "dzen2" : dzenArgs d
+-- | A simple data type for the text alignment of the dzen bar
+data TextAlign = LeftAlign | RightAlign | Centered
 
--- | Build a list of args based on a 'DzenConf'
+-- | 'show' 'TextAlign' makes it suitable for use as a dzen argument
+instance Show TextAlign where
+    show LeftAlign  = "l"
+    show RightAlign = "r"
+    show Centered   = "c"
+
+-- | Build the right list of arguments for a dzen
 dzenArgs :: DzenConf -> [String]
 dzenArgs d = [ "-fn", quote $ font       d
              , "-fg", quote $ fg_color   d
@@ -95,21 +94,25 @@ dzenArgs d = [ "-fn", quote $ font       d
              ] ++ addexec (exec d) ++ addargs d
 
     where
-        -- only add exec if flags are defined
-        addexec s = if null s then [] else ["-e", quote s]
         quote = ("'"++) . (++ "'")
+        addexec s = if null s then [] else ["-e", quote s]
 
--- | A wrapper for 'spawnPipe' to spawn a 'DzenConf' and return its handle
+-- | Spawn a dzen by configuraion and return it's handle, behaves 
+--   exactly as spawnPipe but takes a DzenConf argument
 spawnDzen :: DzenConf -> IO Handle
-spawnDzen = spawnPipe . show
+spawnDzen = spawnPipe . dzen
 
--- | A default dzen bar, uses the same colors/font as defaultXPConfig
---   from XMonad.Prompt. Maybe some day we'll have Dzen.Themes too...
+-- | Return the full string executable for the given configuration
+dzen :: DzenConf -> String
+dzen = unwords . (:) "dzen2" . dzenArgs
+
+-- | A default dzen configuration. Similar colors to default decorations 
+--   and prompts in other modules.
 defaultDzen :: DzenConf
 defaultDzen = DzenConf
     { x_position  = 0
     , y_position  = 0
-    , width       = 500
+    , width       = 1280
     , height      = 17
     , alignment   = LeftAlign
     , font        = "-misc-fixed-*-*-*-*-10-*-*-*-*-*-*-*"
@@ -118,4 +121,3 @@ defaultDzen = DzenConf
     , exec        = "onstart=lower"
     , addargs     = ["-p"]
     }
-
