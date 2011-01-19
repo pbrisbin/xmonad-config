@@ -54,7 +54,7 @@ import XMonad.Util.Run (spawnPipe)
 -- If you just want to spawn a dzen and don't care about its handle you
 -- can use the following:
 --
--- > dzen >>= spawn
+-- > dzen defaultDzen >>= spawn
 --
 
 -- | A data type to fully describe a spawnable dzen bar, take a look at
