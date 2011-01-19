@@ -35,11 +35,9 @@ import XMonad.Hooks.EwmhDesktops         (ewmh)
 import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.UrgencyHook
-import XMonad.Layout.IM                  (Property(..), withIM)
 import XMonad.Layout.LayoutCombinators   ((|||), JumpToLayout(..))
 import XMonad.Layout.LayoutHints         (layoutHintsWithPlacement)
 import XMonad.Layout.NoBorders           (Ambiguity(..), With(..), lessBorders)
-import XMonad.Layout.PerWorkspace        (onWorkspace)
 import XMonad.Layout.ResizableTile       (ResizableTall(..), MirrorResize(..))
 import XMonad.Util.EZConfig              (additionalKeysP)
 import XMonad.Util.Loggers               (Logger, maildirNew, dzenColorL, wrapL, shortenL)
@@ -111,14 +109,12 @@ rightBarWidth = 1680
 
 -- Layouts {{{
 --
--- See http://pbrisbin.com/posts/xmonads_im_layout/
+-- See http://pbrisbin.com/posts/xmonads_im_layout/ for the IM Layout 
+-- code that used to be here.
 --
-myLayout = avoidStruts $ onWorkspace "3-chat" imLayout standardLayouts
+myLayout = avoidStruts standardLayouts
 
     where
-        -- use standardLayouts just like any other workspace
-        imLayout = withIM (1/10) (Role "roster") standardLayouts
-
         -- a simple Tall, Wide, Full setup but hinted, resizable, and
         -- with smarter borders
         standardLayouts = smart $ tiled ||| Mirror tiled ||| full
@@ -144,28 +140,21 @@ myManageHook = mainManageHook <+> manageDocks <+> manageFullScreen <+> manageScr
     where
         -- the main managehook
         mainManageHook = composeAll $ concat
-            [ [ resource  =? r     --> doIgnore         |  r    <- myIgnores ]
-            , [ className =? c     --> doShift "2-web"  |  c    <- myWebs    ]
-            , [ title     =? t     --> doShift "3-chat" |  t    <- myChats   ]
-            , [ className =? c     --> doShift "3-chat" | (c,_) <- myIMs     ]
-            , [ className =? c     --> doFloat          |  c    <- myFloats  ]
-            , [ className =? c     --> doCenterFloat    |  c    <- myCFloats ]
-            , [ name      =? n     --> doCenterFloat    |  n    <- myCNames  ]
-            , [ classNotRole (c,r) --> doFloat          | (c,r) <- myIMs     ]
-            , [ isDialog           --> doCenterFloat                         ]
+            [ [ resource  =? r --> doIgnore         | r <- myIgnores ]
+            , [ className =? c --> doShift "2-web"  | c <- myWebs    ]
+            , [ title     =? t --> doShift "3-chat" | t <- myChats   ]
+            , [ className =? c --> doFloat          | c <- myFloats  ]
+            , [ className =? c --> doCenterFloat    | c <- myCFloats ]
+            , [ name      =? n --> doCenterFloat    | n <- myCNames  ]
+            , [ isDialog       --> doCenterFloat                     ]
             ]
 
         -- fullscreen but still allow focusing of other WSs
         manageFullScreen = isFullscreen --> doF W.focusDown <+> doFullFloat
 
-        -- a special query to find an im window that's not my buddy list
-        classNotRole :: (String,String) -> Query Bool
-        classNotRole (c,r) = className =? c <&&> role /=? r
-
         role = stringProperty "WM_WINDOW_ROLE"
         name = stringProperty "WM_NAME"
 
-        myIMs     = [("Gajim.py","roster")]
         myIgnores = ["desktop","desktop_window"]
         myChats   = ["irssi","mutt" ]
         myWebs    = ["Uzbl","Uzbl-core","Jumanji","Chromium"]
@@ -181,10 +170,10 @@ myManageHook = mainManageHook <+> manageDocks <+> manageFullScreen <+> manageScr
 --
 myLeftBar :: DzenConf
 myLeftBar = defaultDzen
-    { width       = leftBarWidth
-    , font        = myFont
-    , fg_color    = colorFG
-    , bg_color    = colorBG
+    { width    = leftBarWidth
+    , font     = myFont
+    , fg_color = colorFG
+    , bg_color = colorBG
     }
 
 myRssBar :: DzenConf
@@ -241,7 +230,7 @@ myLogHook h = do
         , ppSep             = replicate 4 ' '
         , ppWsSep           = []
         , ppTitle           = shorten 100 . map toLower . highlightBase colorFG6
-        , ppLayout          = dzenFG colorFG2 . renameLayouts . stripIM
+        , ppLayout          = dzenFG colorFG2 . renameLayouts
         , ppSort            = getSortByXineramaRule
         , ppExtras          = [myMail, myUpdates]
         , ppOutput          = hPutStrLn h
@@ -287,8 +276,6 @@ myLogHook h = do
             "Mirror Hinted ResizableTall"   -> "/-,-/"
             "Hinted Full"                   -> "/   /"
             _                               -> s
-
-        stripIM s = if "IM " `isPrefixOf` s then drop (length "IM ") s else s
 
 -- }}}
 
