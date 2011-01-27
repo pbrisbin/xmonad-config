@@ -16,16 +16,17 @@
 module Dzen (
     -- * Usage
     -- $usage
-    DzenConf(..), 
-    TextAlign(..), 
-    defaultDzen, 
-    dzen, 
-    spawnDzen
+      DzenConf(..)
+    , TextAlign(..)
+    , defaultDzen
+    , dzen
+    , spawnDzen
+    , spawnToDzen
     ) where
 
-import System.IO       (Handle)
-import XMonad.Util.Run (spawnPipe)
-
+import System.IO
+import System.Posix.IO
+import System.Posix.Process (executeFile, forkProcess, createSession)
 
 -- $usage
 --
@@ -39,7 +40,7 @@ import XMonad.Util.Run (spawnPipe)
 -- >
 -- > main :: IO ()
 -- > main = do
--- >     d <- spawnDzen defaultDzen
+-- >     d <- spawnDzen someDzen
 -- >
 -- >     xmonad $ defaultConfig
 -- >         { ...
@@ -51,10 +52,12 @@ import XMonad.Util.Run (spawnPipe)
 -- >     , ppOutput = hPutStrLn h
 -- >     }
 --
--- If you just want to spawn a dzen and don't care about its handle you
--- can use the following:
+-- If you want to feed some other process into a dzen you can use the 
+-- following:
 --
--- > dzen defaultDzen >>= spawn
+-- > spawnToDzen "conky" someDzen
+--
+-- Where someDzen is a 'DzenConf'
 --
 
 -- | A data type to fully describe a spawnable dzen bar, take a look at
@@ -81,6 +84,45 @@ instance Show TextAlign where
     show RightAlign = "r"
     show Centered   = "c"
 
+-- | Spawn a dzen by configuraion and return it's handle, behaves 
+--   exactly as spawnPipe but takes a DzenConf argument.
+spawnDzen :: DzenConf -> IO Handle
+spawnDzen d = do
+    (rd, wr) <- createPipe
+    setFdOption wr CloseOnExec True
+    h <- fdToHandle wr
+    hSetBuffering h LineBuffering
+    forkProcess $ do
+        createSession
+        dupTo rd stdInput
+        executeFile "/bin/sh" False ["-c", dzen d] Nothing
+    return h
+
+-- | Spawn a process sending its stdout to the stdin of the dzen
+spawnToDzen :: String -> DzenConf -> IO ()
+spawnToDzen x d = do
+    (rd, wr) <- createPipe
+    setFdOption rd CloseOnExec True
+    setFdOption wr CloseOnExec True
+    hin  <- fdToHandle rd
+    hout <- fdToHandle wr
+    hSetBuffering hin  LineBuffering
+    hSetBuffering hout LineBuffering
+
+    -- the dzen
+    forkProcess $ do
+        createSession
+        dupTo rd stdInput
+        executeFile "/bin/sh" False ["-c", dzen d] Nothing
+
+    -- the input process
+    forkProcess $ do
+        createSession
+        dupTo wr stdOutput
+        executeFile "/bin/sh" False ["-c", x] Nothing
+
+    return ()
+
 -- | Build the right list of arguments for a dzen
 dzenArgs :: DzenConf -> [String]
 dzenArgs d = [ "-fn", quote $ font       d
@@ -96,11 +138,6 @@ dzenArgs d = [ "-fn", quote $ font       d
     where
         quote = ("'"++) . (++ "'")
         addexec s = if null s then [] else ["-e", quote s]
-
--- | Spawn a dzen by configuraion and return it's handle, behaves 
---   exactly as spawnPipe but takes a DzenConf argument
-spawnDzen :: DzenConf -> IO Handle
-spawnDzen = spawnPipe . dzen
 
 -- | Return the full string executable for the given configuration
 dzen :: DzenConf -> String
