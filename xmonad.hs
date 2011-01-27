@@ -62,7 +62,7 @@ main = do
     d <- spawnDzen myLeftBar
 
     spawn "conky"
-    spawn $ "conky -c ~/.dzen_conkyrc | " ++ dzen myRightBar
+    spawnToDzen "conky -c ~/.dzen_conkyrc" myRightBar
     spawnDzen myRssBar >>= spawnReader myReaderConf
 
     -- ewmh just makes wmctrl work
