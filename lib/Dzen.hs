@@ -19,7 +19,6 @@ module Dzen (
       DzenConf(..)
     , TextAlign(..)
     , defaultDzen
-    , dzen
     , spawnDzen
     , spawnToDzen
     ) where
@@ -57,7 +56,7 @@ import System.Posix.Process (executeFile, forkProcess, createSession)
 --
 -- > spawnToDzen "conky" someDzen
 --
--- Where someDzen is a 'DzenConf'
+-- Where someDzen is a 'DzenConf' (see 'defaultDzen' for an example).
 --
 
 -- | A data type to fully describe a spawnable dzen bar, take a look at
@@ -84,7 +83,7 @@ instance Show TextAlign where
     show RightAlign = "r"
     show Centered   = "c"
 
--- | Spawn a dzen by configuraion and return it's handle, behaves 
+-- | Spawn a dzen by configuraion and return its handle, behaves 
 --   exactly as spawnPipe but takes a DzenConf argument.
 spawnDzen :: DzenConf -> IO Handle
 spawnDzen d = do
@@ -95,7 +94,7 @@ spawnDzen d = do
     forkProcess $ do
         createSession
         dupTo rd stdInput
-        executeFile "/bin/sh" False ["-c", dzen d] Nothing
+        executeFile "dzen2" True (dzenArgs d) Nothing
     return h
 
 -- | Spawn a process sending its stdout to the stdin of the dzen
@@ -113,7 +112,7 @@ spawnToDzen x d = do
     forkProcess $ do
         createSession
         dupTo rd stdInput
-        executeFile "/bin/sh" False ["-c", dzen d] Nothing
+        executeFile "dzen2" True (dzenArgs d) Nothing
 
     -- the input process
     forkProcess $ do
@@ -136,15 +135,12 @@ dzenArgs d = [ "-fn", quote $ font       d
              ] ++ addexec (exec d) ++ addargs d
 
     where
-        quote = ("'"++) . (++ "'")
+        quote = ("'"++) . (++"'")
         addexec s = if null s then [] else ["-e", quote s]
 
--- | Return the full string executable for the given configuration
-dzen :: DzenConf -> String
-dzen = unwords . (:) "dzen2" . dzenArgs
-
 -- | A default dzen configuration. Similar colors to default decorations 
---   and prompts in other modules.
+--   and prompts in other modules. Added options @-p@ and @-e 
+--   \'onstart=lower\'@ are useful for dzen-as-statusbar.
 defaultDzen :: DzenConf
 defaultDzen = DzenConf
     { x_position  = 0
