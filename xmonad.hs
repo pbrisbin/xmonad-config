@@ -101,6 +101,7 @@ colorFG5 = "#c4df90"
 colorFG6 = "#ffffba"
 
 -- status bar sizes
+barHeight     = 17
 leftBarWidth  = 920
 rssBarWidth   = 1000
 rightBarWidth = 1680
@@ -170,23 +171,24 @@ myManageHook = mainManageHook <+> manageDocks <+> manageFullScreen <+> manageScr
 --
 myLeftBar :: DzenConf
 myLeftBar = defaultDzen
-    { width    = leftBarWidth
-    , font     = myFont
-    , fg_color = colorFG
-    , bg_color = colorBG
+    { width    = Just leftBarWidth
+    , height   = Just barHeight
+    , font     = Just myFont
+    , fg_color = Just colorFG
+    , bg_color = Just colorBG
     }
 
 myRssBar :: DzenConf
 myRssBar = myLeftBar
-    { x_position = leftBarWidth
-    , width      = rssBarWidth
+    { x_position = Just leftBarWidth
+    , width      = Just rssBarWidth
     }
 
 myRightBar :: DzenConf
 myRightBar = myLeftBar
-    { x_position = leftBarWidth + rssBarWidth
-    , width      = rightBarWidth
-    , alignment  = RightAlign
+    { x_position = Just $ leftBarWidth + rssBarWidth
+    , width      = Just rightBarWidth
+    , alignment  = Just RightAlign
     }
 
 -- }}}
