@@ -21,6 +21,9 @@ module Dzen (
     , defaultDzen
     , spawnDzen
     , spawnToDzen
+    -- * API
+    , dzen
+    , dzenArgs
     ) where
 
 import System.IO
@@ -98,7 +101,9 @@ spawnDzen d = do
     forkProcess $ do
         createSession
         dupTo rd stdInput
-        executeFile "dzen2" True (dzenArgs d) Nothing
+        -- why does this not work?
+        --executeFile "dzen2" True (dzenArgs d) Nothing
+        executeFile "/bin/sh" False ["-c", dzen d] Nothing
     return h
 
 -- | Spawn a process sending its stdout to the stdin of the dzen
@@ -116,7 +121,9 @@ spawnToDzen x d = do
     forkProcess $ do
         createSession
         dupTo rd stdInput
-        executeFile "dzen2" True (dzenArgs d) Nothing
+        -- why does this not work?
+        --executeFile "dzen2" True (dzenArgs d) Nothing
+        executeFile "/bin/sh" False ["-c", dzen d] Nothing
 
     -- the input process
     forkProcess $ do
@@ -126,9 +133,14 @@ spawnToDzen x d = do
 
     return ()
 
--- | Build the right list of arguments for a 'DzenConf'
+-- | The full dzen command as a string
+dzen :: DzenConf -> String
+dzen = unwords . (:) "dzen2" . dzenArgs
+
+-- | The right list of arguments for \"dzen2\"
 dzenArgs :: DzenConf -> [String]
-dzenArgs d =  addOpt ("-fg", fmap quote $ fg_color   d)
+dzenArgs d =  addOpt ("-fn", fmap quote $ font       d)
+           ++ addOpt ("-fg", fmap quote $ fg_color   d)
            ++ addOpt ("-bg", fmap quote $ bg_color   d)
            ++ addOpt ("-ta", fmap show  $ alignment  d)
            ++ addOpt ("-x" , fmap show  $ x_position d)
@@ -156,7 +168,7 @@ defaultDzen = DzenConf
     , y_position  = Nothing
     , width       = Nothing
     , height      = Nothing
-    , alignment   = Nothing
+    , alignment   = Just LeftAlign
     , font        = Just "-misc-fixed-*-*-*-*-10-*-*-*-*-*-*-*"
     , fg_color    = Just "#FFFFFF"
     , bg_color    = Just "#333333"
