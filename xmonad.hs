@@ -27,7 +27,7 @@ import qualified XMonad.StackSet as W
 -- xmonad-contrib
 import XMonad.Actions.CycleWS            (toggleWS)
 import XMonad.Actions.FindEmptyWorkspace (tagToEmptyWorkspace, viewEmptyWorkspace)
-import XMonad.Actions.GroupNavigation    (Direction(..), historyHook, nextMatch)
+--import XMonad.Actions.GroupNavigation    (Direction(..), historyHook, nextMatch)
 import XMonad.Actions.Warp               (Corner(..), banishScreen)
 import XMonad.Actions.WithAll            (killAll)
 import XMonad.Hooks.DynamicLog hiding    (dzen)
@@ -221,7 +221,7 @@ promptConfig = P.defaultXPConfig
 
 -- LogHook {{{
 myLogHook :: Handle -> X ()
-myLogHook h = do
+myLogHook h = --do
     -- the main logHook
     dynamicLogWithPP $ defaultPP
         { ppCurrent         = dzenFG colorFG5 . pad
@@ -239,7 +239,7 @@ myLogHook h = do
         }
 
     -- update window focus history
-    historyHook
+    --historyHook
 
     where
         -- don't show 4-9 if they're empty, never show NSP
@@ -325,7 +325,7 @@ myKeys = [ ("M-p"                   , spawn "launcher"               ) -- dmenu 
          , ("M-i"                   , mirrorExpand                   ) -- expand slave panes vertically
          , ("M-f"                   , jumpToFull                     ) -- jump to full layout
          , ("M-b"                   , banishScreen LowerRight        ) -- banish the mouse
-         , ("M-<Tab>"               , nextMatch History (return True)) -- recreates a "normal" Alt-Tab
+         --, ("M-<Tab>"               , nextMatch History (return True)) -- recreates a "normal" Alt-Tab
 
          -- non-standard screen navigation
          , ("M-h"                   , focusScreen 0                  ) -- focus left screen
