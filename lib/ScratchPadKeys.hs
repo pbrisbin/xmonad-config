@@ -29,16 +29,16 @@ module ScratchPadKeys
     , spawnScratchpad
     , runInTerminal
     , mkTermSP
-    -- * Scrachpad
-    -- $scratchpad
+    -- * Scrachpads
+    -- $scratchpads
     , scratchPadList
     , scratchTerminal
     , scratchMixer
     , scratchMail
     , scratchMusic
     , scratchTop
-    -- * ManageHook
-    -- $managehook
+    -- * ManageHooks
+    -- $managehooks
     , centerScreen
     , bottomEdge
     ) where
