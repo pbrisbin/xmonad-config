@@ -18,18 +18,21 @@ module Dzen (
     -- $usage
       DzenConf(..)
     , TextAlign(..)
-    , defaultDzen
+    -- * Spawning
     , spawnDzen
     , spawnToDzen
     -- * API
     , dzen
     , dzenArgs
+    -- * Example Dzens
+    , defaultDzen
+    , nothingDzen
     ) where
 
+import Data.List (intercalate)
 import System.IO
 import System.Posix.IO
 import System.Posix.Process (executeFile, forkProcess, createSession)
-import Data.List (intercalate)
 
 -- $usage
 --
@@ -39,7 +42,7 @@ import Data.List (intercalate)
 --
 -- >
 -- > import Dzen
--- > import XMonad.Hooks.DynamicLog
+-- > import XMonad.Hooks.DynamicLog hiding (dzen)
 -- >
 -- > main :: IO ()
 -- > main = do
@@ -67,7 +70,7 @@ import Data.List (intercalate)
 --   @\/usr\/share\/doc\/dzen2\/README@ to see what input is acceptable. 
 --   Options are wrapped in 'Just', so using 'Nothing' will not add that 
 --   option to the @dzen2@ executable. @exec@ and @addargs@ can be 
---   empty.
+--   empty for the same purpose.
 data DzenConf = DzenConf 
     { x_position :: Maybe Int       -- ^ x position
     , y_position :: Maybe Int       -- ^ y position
@@ -91,7 +94,7 @@ instance Show TextAlign where
     show Centered   = "c"
 
 -- | Spawn a dzen by configuraion and return its handle, behaves 
---   exactly as spawnPipe but takes a DzenConf argument.
+--   exactly as spawnPipe but takes a 'DzenConf' as argument.
 spawnDzen :: DzenConf -> IO Handle
 spawnDzen d = do
     (rd, wr) <- createPipe
@@ -133,11 +136,11 @@ spawnToDzen x d = do
 
     return ()
 
--- | The full dzen command as a string
+-- | The full computed dzen command for a 'DzenConf'
 dzen :: DzenConf -> String
 dzen = unwords . (:) "dzen2" . dzenArgs
 
--- | The right list of arguments for \"dzen2\"
+-- | The computed list of arguments for a 'DzenConf'
 dzenArgs :: DzenConf -> [String]
 dzenArgs d =  addOpt ("-fn", fmap quote $ font       d)
            ++ addOpt ("-fg", fmap quote $ fg_color   d)
@@ -163,15 +166,26 @@ dzenArgs d =  addOpt ("-fn", fmap quote $ font       d)
 --   and prompts in other modules. Added options @-p@ and @-e 
 --   \'onstart=lower\'@ are useful for dzen-as-statusbar.
 defaultDzen :: DzenConf
-defaultDzen = DzenConf
-    { x_position  = Nothing
-    , y_position  = Nothing
-    , width       = Nothing
-    , height      = Nothing
-    , alignment   = Just LeftAlign
+defaultDzen = nothingDzen
+    { alignment   = Just LeftAlign
     , font        = Just "-misc-fixed-*-*-*-*-10-*-*-*-*-*-*-*"
     , fg_color    = Just "#FFFFFF"
     , bg_color    = Just "#333333"
     , exec        = ["onstart=lower"]
     , addargs     = ["-p"]
+    }
+
+-- | A dzen with all options as 'Nothing' or the empty list.
+nothingDzen :: DzenConf
+nothingDzen = DzenConf
+    { x_position = Nothing
+    , y_position = Nothing
+    , width      = Nothing
+    , height     = Nothing
+    , alignment  = Nothing
+    , font       = Nothing
+    , fg_color   = Nothing
+    , bg_color   = Nothing
+    , exec       = []
+    , addargs    = []
     }
