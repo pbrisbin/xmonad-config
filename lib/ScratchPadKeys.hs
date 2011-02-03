@@ -20,22 +20,27 @@
 --
 -------------------------------------------------------------------------------
 
-module ScratchPadKeys (
-    -- * Usage
-    -- $usage
-    ScratchPad(..),
-    manageScratchPads,
-    scratchPadKeys,
-    spawnScratchpad,
-    runInTerminal,
-    -- * Scrachpads
-    -- $scratchpads
-    scratchPadList,
-    scratchMail, scratchMixer, scratchMusic,
-    scratchTerminal, scratchTop,
-    -- * ManageHooks
-    -- $managehooks
-    centerScreen, bottomEdge
+module ScratchPadKeys
+    ( -- * Usage
+      -- $usage
+      ScratchPad(..)
+    , manageScratchPads
+    , scratchPadKeys
+    , spawnScratchpad
+    , runInTerminal
+    , mkTermSP
+    -- * Scrachpad
+    -- $scratchpad
+    , scratchPadList
+    , scratchTerminal
+    , scratchMixer
+    , scratchMail
+    , scratchMusic
+    , scratchTop
+    -- * ManageHook
+    -- $managehook
+    , centerScreen
+    , bottomEdge
     ) where
 
 import XMonad
@@ -129,6 +134,15 @@ spawnScratchpad sp = withWindowSet $ \s -> do
 scratchPadList :: [ScratchPad]
 scratchPadList = [scratchMixer, scratchMail, scratchMusic, scratchTop, scratchTerminal]
 
+-- | A terminal along the bottom edge
+scratchTerminal :: ScratchPad
+scratchTerminal = ScratchPad
+    { keybind  = "M4-t"
+    , cmd      = runInTerminal ["-name", "sp-term"]
+    , query    = resource =? "sp-term"
+    , hook     = bottomEdge 0.15
+    }
+
 -- | ossxmix center screen
 scratchMixer :: ScratchPad
 scratchMixer = ScratchPad
@@ -138,42 +152,30 @@ scratchMixer = ScratchPad
     , hook     = centerScreen 0.65
     }
 
--- todo: abstract out repeated code on all the in-term scratchpads...
-
 -- | mutt center screen
 scratchMail :: ScratchPad
-scratchMail = ScratchPad
-    { keybind = "M4-m"
-    , cmd     = runInTerminal ["-name", "sp-mutt", "-e", "mutt"]
-    , query   = resource =? "sp-mutt"
-    , hook    = centerScreen 0.65
-    }
+scratchMail = mkTermSP "mutt" "M4" $ centerScreen 0.65
 
 -- | ncmpcpp center screen
 scratchMusic :: ScratchPad
-scratchMusic = ScratchPad
-    { keybind  = "M4-n"
-    , cmd      = runInTerminal ["-name", "sp-ncmpcpp", "-e", "ncmpcpp"]
-    , query    = resource =? "sp-ncmpcpp"
-    , hook     = centerScreen 0.65
-    }
+scratchMusic = mkTermSP "ncmpcpp" "M4" $ centerScreen 0.65
 
 -- | htop center screen
 scratchTop :: ScratchPad
-scratchTop = ScratchPad
-    { keybind = "M4-h"
-    , cmd     = runInTerminal ["-name", "sp-htop", "-e", "htop"]
-    , query   = resource =? "sp-htop"
-    , hook    = centerScreen 0.65
-    }
+scratchTop = mkTermSP "htop" "M4" $ centerScreen 0.65
 
--- | A terminal along the bottom edge
-scratchTerminal :: ScratchPad
-scratchTerminal = ScratchPad
-    { keybind  = "M4-t"
-    , cmd      = runInTerminal ["-name", "sp-term"]
-    , query    = resource =? "sp-term"
-    , hook     = bottomEdge 0.15
+-- | Makes an in-term scratchpad given executable, modifier, and hook. 
+--   Uses modifier and the first letter of the executable as the 
+--   keybind. Your terminal must suppor @-name@ and @-e@ and you must 
+--   ensure unique keybinds result.
+mkTermSP :: String -- ^ executable
+         -> String -- ^ modifier, ex: \"M\", \"M4-C\", etc
+         -> ManageHook -> ScratchPad
+mkTermSP x m h = ScratchPad
+    { keybind = m ++ "-" ++ take 1 x
+    , cmd     = runInTerminal ["-name", "sp-" ++ x, "-e", x]
+    , query   = resource =? ("sp-" ++ x)
+    , hook    = h
     }
 
 -- $managehooks
