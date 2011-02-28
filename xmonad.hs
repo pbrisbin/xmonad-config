@@ -120,7 +120,7 @@ myLayout = avoidStruts standardLayouts
         -- with smarter borders
         standardLayouts = smart $ tiled ||| Mirror tiled ||| full
 
-        tiled = hinted $ ResizableTall 1 (1/100) golden []
+        tiled = hinted $ ResizableTall 1 (3/100) golden []
         full  = hinted Full
 
         -- master:slave set at the golden ratio
@@ -171,7 +171,7 @@ myManageHook = mainManageHook <+> manageDocks <+> manageFullScreen <+> manageScr
 --
 myLeftBar :: DzenConf
 myLeftBar = defaultDzen
-    { width    = Just leftBarWidth
+    { width    = Just $ Percent 60
     , height   = Just barHeight
     , font     = Just myFont
     , fg_color = Just colorFG
@@ -180,15 +180,15 @@ myLeftBar = defaultDzen
 
 myRssBar :: DzenConf
 myRssBar = myLeftBar
-    { x_position = Just leftBarWidth
-    , width      = Just rssBarWidth
+    { x_position = Just $ Percent 60
+    , width      = Just $ Percent 40
     }
 
 myRightBar :: DzenConf
 myRightBar = myLeftBar
-    { x_position = Just $ leftBarWidth + rssBarWidth
-    , width      = Just rightBarWidth
+    { screen     = Just 1
     , alignment  = Just RightAlign
+    , width      = Nothing
     }
 
 -- }}}

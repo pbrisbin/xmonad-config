@@ -17,7 +17,9 @@ module Dzen (
     -- * Usage
     -- $usage
       DzenConf(..)
+    , DzenWidth(..)
     , TextAlign(..)
+    , ScreenNum
     -- * Spawning
     , spawnDzen
     , spawnToDzen
@@ -30,9 +32,13 @@ module Dzen (
     ) where
 
 import Data.List (intercalate)
+import Data.Maybe (fromMaybe)
 import System.IO
 import System.Posix.IO
 import System.Posix.Process (executeFile, forkProcess, createSession)
+
+import Graphics.X11.Xlib     (openDisplay)
+import Graphics.X11.Xinerama (xineramaQueryScreens, xsi_width)
 
 -- $usage
 --
@@ -72,9 +78,10 @@ import System.Posix.Process (executeFile, forkProcess, createSession)
 --   option to the @dzen2@ executable. @exec@ and @addargs@ can be 
 --   empty for the same purpose.
 data DzenConf = DzenConf 
-    { x_position :: Maybe Int       -- ^ x position
+    { x_position :: Maybe DzenWidth -- ^ x position
     , y_position :: Maybe Int       -- ^ y position
-    , width      :: Maybe Int       -- ^ width
+    , screen     :: Maybe ScreenNum -- ^ screen number (Nothing implies 0)
+    , width      :: Maybe DzenWidth -- ^ width
     , height     :: Maybe Int       -- ^ line height
     , alignment  :: Maybe TextAlign -- ^ alignment of title window
     , font       :: Maybe String    -- ^ font
@@ -83,6 +90,12 @@ data DzenConf = DzenConf
     , exec       :: [String]        -- ^ exec flags, ex: [\"onstart=lower\", ...]
     , addargs    :: [String]        -- ^ additional arguments, ex: [\"-p\", \"-tw\", \"5\"]
     }
+
+-- | Xinerama screen number
+type ScreenNum = Int
+
+-- | Define a width and x argument as straight pixel, or percentages
+data DzenWidth = Pixels Int | Percent Double
 
 -- | A simple data type for the text alignment of the dzen bar
 data TextAlign = LeftAlign | RightAlign | Centered
@@ -102,11 +115,10 @@ spawnDzen d = do
     h <- fdToHandle wr
     hSetBuffering h LineBuffering
     forkProcess $ do
+        dz <- dzen d
         createSession
         dupTo rd stdInput
-        -- why does this not work?
-        --executeFile "dzen2" True (dzenArgs d) Nothing
-        executeFile "/bin/sh" False ["-c", dzen d] Nothing
+        executeFile "/bin/sh" False ["-c", dz] Nothing
     return h
 
 -- | Spawn a process sending its stdout to the stdin of the dzen
@@ -122,11 +134,10 @@ spawnToDzen x d = do
 
     -- the dzen
     forkProcess $ do
+        dz <- dzen d
         createSession
         dupTo rd stdInput
-        -- why does this not work?
-        --executeFile "dzen2" True (dzenArgs d) Nothing
-        executeFile "/bin/sh" False ["-c", dzen d] Nothing
+        executeFile "/bin/sh" False ["-c", dz] Nothing
 
     -- the input process
     forkProcess $ do
@@ -137,21 +148,26 @@ spawnToDzen x d = do
     return ()
 
 -- | The full computed dzen command for a 'DzenConf'
-dzen :: DzenConf -> String
-dzen = unwords . (:) "dzen2" . dzenArgs
+dzen :: DzenConf -> IO String
+dzen d = return . unwords . (:) "dzen2" =<< dzenArgs d
 
 -- | The computed list of arguments for a 'DzenConf'
-dzenArgs :: DzenConf -> [String]
-dzenArgs d =  addOpt ("-fn", fmap quote $ font       d)
-           ++ addOpt ("-fg", fmap quote $ fg_color   d)
-           ++ addOpt ("-bg", fmap quote $ bg_color   d)
-           ++ addOpt ("-ta", fmap show  $ alignment  d)
-           ++ addOpt ("-x" , fmap show  $ x_position d)
-           ++ addOpt ("-y" , fmap show  $ y_position d)
-           ++ addOpt ("-w" , fmap show  $ width      d)
-           ++ addOpt ("-h" , fmap show  $ height     d)
-           ++ addExec (exec d)
-           ++ addargs d
+dzenArgs :: DzenConf -> IO [String]
+dzenArgs d = do
+    x <- mkWidth (screen d) (x_position d)
+    w <- mkWidth (screen d) (width d)
+
+    return $ addOpt ("-fn", fmap quote $ font       d)
+          ++ addOpt ("-fg", fmap quote $ fg_color   d)
+          ++ addOpt ("-bg", fmap quote $ bg_color   d)
+          ++ addOpt ("-ta", fmap show  $ alignment  d)
+          ++ addOpt ("-xs", fmap show  $ screen     d)
+          ++ addOpt ("-y" , fmap show  $ y_position d)
+          ++ addOpt ("-h" , fmap show  $ height     d)
+          ++ addOpt ("-x" , fmap show  $ x           )
+          ++ addOpt ("-w" , fmap show  $ w           )
+          ++ addExec (exec d)
+          ++ addargs d
 
     where
         quote = ("'"++) . (++"'")
@@ -161,6 +177,30 @@ dzenArgs d =  addOpt ("-fn", fmap quote $ font       d)
 
         addExec [] = []
         addExec es = ["-e", quote $ intercalate ";" es]
+
+-- | Return the width of ScreenId s (0 index), return 0 if screen 
+--   doesn't exist
+screenWidth :: ScreenNum -> IO Double
+screenWidth s = do
+    --dsp <- openDisplay ""
+    dsp <- openDisplay ":0.0"
+    mss <- xineramaQueryScreens dsp
+    return $ case mss of
+        Nothing -> 0
+        Just [] -> 0
+        Just ss -> if s >= 0 && s < length ss -- prevent bad index
+            then fromIntegral . xsi_width $ ss !! s else 0
+
+-- | Given a 'DzenWidth', give back the Maybe Int that can be used as an 
+--   argument for dzen2 -w or -x.
+mkWidth :: Maybe ScreenNum -> Maybe DzenWidth -> IO (Maybe Int)
+mkWidth Nothing w                   = mkWidth (Just 0) w
+mkWidth _       Nothing             = return Nothing
+mkWidth (Just s) (Just (Pixels x))  = return $ Just x
+mkWidth (Just s) (Just (Percent c)) = return . go =<< screenWidth s
+    where
+        go 0  = Nothing
+        go sw = Just . round $ (c/100) * sw
 
 -- | A default dzen configuration. Similar colors to default decorations 
 --   and prompts in other modules. Added options @-p@ and @-e 
@@ -180,6 +220,7 @@ nothingDzen :: DzenConf
 nothingDzen = DzenConf
     { x_position = Nothing
     , y_position = Nothing
+    , screen     = Nothing
     , width      = Nothing
     , height     = Nothing
     , alignment  = Nothing
