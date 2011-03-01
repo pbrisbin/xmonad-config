@@ -100,12 +100,6 @@ colorFG4 = "#cc896d"
 colorFG5 = "#c4df90"
 colorFG6 = "#ffffba"
 
--- status bar sizes
-barHeight     = 17
-leftBarWidth  = 920
-rssBarWidth   = 1000
-rightBarWidth = 1680
-
 -- }}}
 
 -- Layouts {{{
@@ -172,7 +166,7 @@ myManageHook = mainManageHook <+> manageDocks <+> manageFullScreen <+> manageScr
 myLeftBar :: DzenConf
 myLeftBar = defaultDzen
     { width    = Just $ Percent 60
-    , height   = Just barHeight
+    , height   = Just 17
     , font     = Just myFont
     , fg_color = Just colorFG
     , bg_color = Just colorBG
@@ -195,7 +189,8 @@ myRightBar = myLeftBar
 
 -- RssReader {{{
 --
--- See http://pbrisbin.com/xmonad/docs/RssReader.html
+-- See http://pbrisbin.com/xmonad/docs/RssReader.html and 
+-- http://pbrisbin.com/posts/rss_reader/
 --
 myReaderConf :: ReaderConf
 myReaderConf = defaultReaderConf
@@ -351,7 +346,8 @@ myKeys = [ ("M-p"                   , spawn "launcher"               ) -- dmenu 
          , ("M-q"                   , myRestart                      ) -- restart xmonad
          , ("M-S-q"                 , spawn "leave"                  ) -- logout menu
 
-         -- See http://pbrisbin.com/xmonad/docs/ScratchPadKeys.html
+         -- See http://pbrisbin.com/xmonad/docs/ScratchPadKeys.html and 
+         -- http://pbrisbin.com/posts/scratchpad_everything/
          ] ++ scratchPadKeys scratchPadList
 
     where
