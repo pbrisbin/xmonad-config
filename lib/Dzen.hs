@@ -11,6 +11,11 @@
 -- Provides data types and functions to easily define and spawn dzen
 -- bars.
 --
+-- I'm not sure if the Percent stuff works on a non-Xinerama setup.
+--
+-- You must compile dzen with support for Xinerama if you want to define 
+-- a dzen for a specific screen (it uses the -xs option).
+--
 -------------------------------------------------------------------------------
 
 module Dzen (
@@ -80,7 +85,7 @@ import Graphics.X11.Xinerama (xineramaQueryScreens, xsi_width)
 data DzenConf = DzenConf 
     { x_position :: Maybe DzenWidth -- ^ x position
     , y_position :: Maybe Int       -- ^ y position
-    , screen     :: Maybe ScreenNum -- ^ screen number (Nothing implies 0)
+    , screen     :: Maybe ScreenNum -- ^ screen number (0 based, Nothing implies 0)
     , width      :: Maybe DzenWidth -- ^ width
     , height     :: Maybe Int       -- ^ line height
     , alignment  :: Maybe TextAlign -- ^ alignment of title window
@@ -157,13 +162,15 @@ dzenArgs d = do
     x <- mkWidth (screen d) (x_position d)
     w <- mkWidth (screen d) (width d)
 
+    let s = fmap (+1) $ screen d -- the -xs arg is 1 index
+
     return $ addOpt ("-fn", fmap quote $ font       d)
           ++ addOpt ("-fg", fmap quote $ fg_color   d)
           ++ addOpt ("-bg", fmap quote $ bg_color   d)
           ++ addOpt ("-ta", fmap show  $ alignment  d)
-          ++ addOpt ("-xs", fmap show  $ screen     d)
           ++ addOpt ("-y" , fmap show  $ y_position d)
           ++ addOpt ("-h" , fmap show  $ height     d)
+          ++ addOpt ("-xs", fmap show  $ s           )
           ++ addOpt ("-x" , fmap show  $ x           )
           ++ addOpt ("-w" , fmap show  $ w           )
           ++ addExec (exec d)
@@ -178,12 +185,11 @@ dzenArgs d = do
         addExec [] = []
         addExec es = ["-e", quote $ intercalate ";" es]
 
--- | Return the width of ScreenId s (0 index), return 0 if screen 
+-- | Return the width of ScreenNum s (0 index), return 0 if screen  
 --   doesn't exist
 screenWidth :: ScreenNum -> IO Double
 screenWidth s = do
-    --dsp <- openDisplay ""
-    dsp <- openDisplay ":0.0"
+    dsp <- openDisplay ""
     mss <- xineramaQueryScreens dsp
     return $ case mss of
         Nothing -> 0
