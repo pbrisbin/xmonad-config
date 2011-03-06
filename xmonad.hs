@@ -27,17 +27,15 @@ import qualified XMonad.StackSet as W
 -- xmonad-contrib
 import XMonad.Actions.CycleWS            (toggleWS)
 import XMonad.Actions.FindEmptyWorkspace (tagToEmptyWorkspace, viewEmptyWorkspace)
---import XMonad.Actions.GroupNavigation    (Direction(..), historyHook, nextMatch)
 import XMonad.Actions.Warp               (Corner(..), banishScreen)
 import XMonad.Actions.WithAll            (killAll)
 import XMonad.Hooks.DynamicLog hiding    (dzen)
 import XMonad.Hooks.EwmhDesktops         (ewmh)
-import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.UrgencyHook
 import XMonad.Layout.LayoutCombinators   ((|||), JumpToLayout(..))
 import XMonad.Layout.LayoutHints         (layoutHintsWithPlacement)
-import XMonad.Layout.NoBorders           (Ambiguity(..), With(..), lessBorders)
 import XMonad.Layout.ResizableTile       (ResizableTall(..), MirrorResize(..))
 import XMonad.Util.EZConfig              (additionalKeysP)
 import XMonad.Util.Loggers               (Logger, maildirNew, dzenColorL, wrapL, shortenL)
@@ -110,18 +108,14 @@ colorFG6 = "#ffffba"
 myLayout = avoidStruts standardLayouts
 
     where
-        -- a simple Tall, Wide, Full setup but hinted, resizable, and
-        -- with smarter borders
-        standardLayouts = smart $ tiled ||| Mirror tiled ||| full
+        -- a simple Tall, Wide, Full setup but hinted and resizable
+        standardLayouts = tiled ||| Mirror tiled ||| full
 
         tiled = hinted $ ResizableTall 1 (3/100) golden []
         full  = hinted Full
 
         -- master:slave set at the golden ratio
         golden = toRational $ 2/(1 + sqrt 5 :: Double)
-
-        -- just like smartBorders but better for a xinerama setup
-        smart = lessBorders $ Combine Union OnlyFloat OtherIndicated
 
         -- like hintedTile but applicable to any layout
         hinted l = layoutHintsWithPlacement (0,0) l
@@ -216,25 +210,20 @@ promptConfig = P.defaultXPConfig
 
 -- LogHook {{{
 myLogHook :: Handle -> X ()
-myLogHook h = --do
-    -- the main logHook
-    dynamicLogWithPP $ defaultPP
-        { ppCurrent         = dzenFG colorFG5 . pad
-        , ppVisible         = dzenFG colorFG2 . pad
-        , ppHidden          = dzenFG colorFG2 . noScratchPad
-        , ppHiddenNoWindows = namedOnly
-        , ppUrgent          = dzenFG colorFG4 . pad . dzenStrip . noScratchPad
-        , ppSep             = replicate 4 ' '
-        , ppWsSep           = []
-        , ppTitle           = shorten 100 . map toLower . highlightBase colorFG6
-        , ppLayout          = dzenFG colorFG2 . renameLayouts
-        , ppSort            = getSortByXineramaRule
-        , ppExtras          = [myMail, myUpdates]
-        , ppOutput          = hPutStrLn h
-        }
-
-    -- update window focus history
-    --historyHook
+myLogHook h = dynamicLogWithPP $ defaultPP
+    { ppCurrent         = dzenFG colorFG5 . pad
+    , ppVisible         = dzenFG colorFG2 . pad
+    , ppHidden          = dzenFG colorFG2 . noScratchPad
+    , ppHiddenNoWindows = namedOnly
+    , ppUrgent          = dzenFG colorFG4 . pad . dzenStrip . noScratchPad
+    , ppSep             = replicate 4 ' '
+    , ppWsSep           = []
+    , ppTitle           = shorten 100 . map toLower . highlightBase colorFG6
+    , ppLayout          = dzenFG colorFG2 . renameLayouts
+    , ppSort            = getSortByXineramaRule
+    , ppExtras          = [myMail, myUpdates]
+    , ppOutput          = hPutStrLn h
+    }
 
     where
         -- don't show 4-9 if they're empty, never show NSP
@@ -320,7 +309,6 @@ myKeys = [ ("M-p"                   , spawn "launcher"               ) -- dmenu 
          , ("M-i"                   , mirrorExpand                   ) -- expand slave panes vertically
          , ("M-f"                   , jumpToFull                     ) -- jump to full layout
          , ("M-b"                   , banishScreen LowerRight        ) -- banish the mouse
-         --, ("M-<Tab>"               , nextMatch History (return True)) -- recreates a "normal" Alt-Tab
 
          -- non-standard screen navigation
          , ("M-h"                   , focusScreen 0                  ) -- focus left screen
