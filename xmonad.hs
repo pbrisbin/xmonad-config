@@ -46,7 +46,6 @@ import XMonad.Util.WorkspaceCompare      (getSortByXineramaRule)
 import qualified XMonad.Prompt as P
 
 -- general haskell stuff
-import Data.Char             (toLower)
 import Data.List             (isPrefixOf)
 import System.IO             (Handle, hPutStrLn, hGetContents)
 import System.Process        (runInteractiveCommand)
@@ -218,7 +217,7 @@ myLogHook h = dynamicLogWithPP $ defaultPP
     , ppUrgent          = dzenFG colorFG4 . pad . dzenStrip . noScratchPad
     , ppSep             = replicate 4 ' '
     , ppWsSep           = []
-    , ppTitle           = shorten 100 . map toLower . highlightBase colorFG6
+    , ppTitle           = highlightBase colorFG . shorten 100
     , ppLayout          = dzenFG colorFG2 . renameLayouts
     , ppSort            = getSortByXineramaRule
     , ppExtras          = [myMail, myUpdates]
@@ -241,8 +240,8 @@ myLogHook h = dynamicLogWithPP $ defaultPP
         dzenFGL c = dzenColorL c "" 
 
         -- custom loggers
-        myMail    = wrapL "mail: "    "" . dzenFGL colorFG6 $ maildirNew "/home/patrick/Mail/GMail/INBOX"
-        myUpdates = wrapL "updates: " "" . dzenFGL colorFG6 $ countOutputLines "pacman -Qu"
+        myMail    = wrapL "Mail: "    "" . dzenFGL colorFG6 $ maildirNew "/home/patrick/Mail/GMail/INBOX"
+        myUpdates = wrapL "Updates: " "" . dzenFGL colorFG6 $ countOutputLines "pacman -Qu"
         
         -- count the lines of output of an arbitary command
         countOutputLines :: String -> Logger
