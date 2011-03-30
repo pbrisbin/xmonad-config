@@ -16,7 +16,7 @@ import XMonad
 
 import System.IO                      (Handle, hPutStrLn)
 import XMonad.Hooks.DynamicLog        (dynamicLogWithPP, defaultPP, PP(..), 
-                                        pad, wrap, shorten, dzenColor, dzenStrip)
+                                        pad, shorten, dzenColor, dzenStrip)
 import XMonad.Hooks.ManageDocks       (manageDocks)
 import XMonad.Hooks.ManageHelpers     (isDialog, isFullscreen, doFullFloat, 
                                         doCenterFloat)
@@ -38,17 +38,22 @@ main = do
         , logHook    = myLogHook d
         } `additionalKeysP` myKeys
 
-myTerminal   = "urxvtc"
-myWorkspaces = ["1-main","2-web","3-chat"] ++ map show [4..9]
+myTerminal :: String
+myTerminal = "urxvtc"
+
+myWorkspaces :: [WorkspaceId]
+myWorkspaces = ["1-main","2-web","3-chat"] ++ map show ([4..9] :: [Int])
+
+myFont, colorBG, 
+    colorFG, colorFG2, 
+    colorFG3, colorFG4:: String
 
 myFont     = "Verdana-8"
 colorBG    = "#303030"
-colorFG    = "#606060"
-colorFG2   = "#909090"
+colorFG    = "#909090"
+colorFG2   = "#bbbbbb"
 colorFG3   = "#c4df90"
-colorFG4   = "#cc896d"
-colorFG5   = "#c4df90"
-colorFG6   = "#ffffba"
+colorFG4   = "#ffff80"
 
 myStatusBar :: DzenConf
 myStatusBar = defaultDzen
@@ -89,11 +94,11 @@ myManageHook = mainManageHook <+> manageDocks <+> manageScratchPads scratchPadLi
 
 myLogHook :: Handle -> X ()
 myLogHook h = dynamicLogWithPP $ defaultPP
-    { ppCurrent         = dzenColor colorFG5 "" . pad
+    { ppCurrent         = dzenColor colorFG3 "" . pad
     , ppVisible         = dzenColor colorFG2 "" . pad
     , ppUrgent          = dzenColor colorFG4 "" . pad . dzenStrip . noScratchPad
-    , ppHidden          = dzenColor colorFG2 "" . noScratchPad
-    , ppLayout          = dzenColor colorFG2 "" . renameLayouts
+    , ppHidden          = noScratchPad
+    , ppLayout          = renameLayouts
     , ppSort            = getSortByXineramaRule
     , ppHiddenNoWindows = namedOnly
     , ppSep             = replicate 4 ' '
@@ -137,7 +142,7 @@ myKeys = [ ("M-p"     , spawn "launcher"   ) -- dmenu app launcher
 
             where
                 -- a quoted command to pass off to bash -cl
-                command s = ("\""++) . (++"\"") $ unwords ["SCREEN_CONF=" ++ s, "screen -S", s, "-R -D", s]
+                command s' = ("\""++) . (++"\"") $ unwords ["SCREEN_CONF=" ++ s', "screen -S", s', "-R -D", s']
 
         -- kill all conky/dzen2 before executing default restart command
         myRestart = spawn $ "for pid in `pgrep conky`; do kill -9 $pid; done && " ++
