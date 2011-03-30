@@ -41,7 +41,7 @@ main = do
         { terminal   = myTerminal
         , workspaces = myWorkspaces
         , logHook    = myLogHook d
-        , manageHook = myManageHook <+> manageDocks <+> manageHook defaultConfig
+        , manageHook = myManageHook
         , layoutHook = avoidStruts $ layoutHook defaultConfig
         } `additionalKeysP` myKeys
 
@@ -52,12 +52,16 @@ myWorkspaces :: [WorkspaceId]
 myWorkspaces = ["1-main","2-web","3-chat"] ++ map show ([4..9] :: [Int])
 
 myManageHook :: ManageHook
-myManageHook = (composeAll $ concat
-    [ [ classOrName  v --> a          | (v, a ) <- myFloats ]
+myManageHook = composeAll $ concat
+    [ [ manageDocks                                         ]
+    , [ manageHook defaultConfig                            ]
+    , [ manageScratchPads scratchPadList                    ]
+    , [ classOrName  v --> a          | (v, a ) <- myFloats ]
     , [ classOrTitle v --> doShift ws | (v, ws) <- myShifts ]
     , [ isDialog       --> doCenterFloat                    ]
     , [ isFullscreen   --> doF W.focusDown <+> doFullFloat  ]
-    ]) <+> manageScratchPads scratchPadList
+    , [ manageScratchPads scratchPadList                    ]
+    ]
 
     where
 
