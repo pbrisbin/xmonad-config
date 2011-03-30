@@ -60,7 +60,6 @@ myManageHook = composeAll $ concat
     , [ classOrTitle v --> doShift ws | (v, ws) <- myShifts ]
     , [ isDialog       --> doCenterFloat                    ]
     , [ isFullscreen   --> doF W.focusDown <+> doFullFloat  ]
-    , [ manageScratchPads scratchPadList                    ]
     ]
 
     where
