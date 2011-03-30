@@ -14,6 +14,8 @@
 
 import XMonad
 
+import Dzen                         (DzenConf(..), spawnDzen, defaultDzen)
+import ScratchPadKeys               (scratchPadList, manageScratchPads, scratchPadKeys)
 import System.IO                    (Handle, hPutStrLn)
 import XMonad.Hooks.DynamicLog      (dynamicLogWithPP, dzenPP, PP(..), pad)
 import XMonad.Hooks.ManageDocks     (avoidStruts, manageDocks)
@@ -24,13 +26,8 @@ import XMonad.Util.WorkspaceCompare (getSortByXineramaRule)
 
 import qualified XMonad.StackSet as W
 
-import Dzen           -- http://pbrisbin.com/xmonad/docs/Dzen.html
-import ScratchPadKeys -- http://pbrisbin.com/xmonad/docs/ScratchPadKeys.html
-
 main :: IO ()
 main = do
-    spawn "conky"
-
     d <- spawnDzen defaultDzen
         { font     = Just "Verdana-8"
         , fg_color = Just "#303030"
@@ -38,11 +35,12 @@ main = do
         }
 
     xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig
-        { terminal   = myTerminal
-        , workspaces = myWorkspaces
-        , logHook    = myLogHook d
-        , manageHook = myManageHook
-        , layoutHook = avoidStruts $ layoutHook defaultConfig
+        { terminal    = myTerminal
+        , workspaces  = myWorkspaces
+        , logHook     = myLogHook d
+        , manageHook  = myManageHook
+        , layoutHook  = avoidStruts $ layoutHook defaultConfig
+        , startupHook = spawn "conky"
         } `additionalKeysP` myKeys
 
 myTerminal :: String
@@ -56,10 +54,10 @@ myManageHook = composeAll $ concat
     [ [ manageDocks                                         ]
     , [ manageHook defaultConfig                            ]
     , [ manageScratchPads scratchPadList                    ]
-    , [ classOrName  v --> a          | (v, a ) <- myFloats ]
-    , [ classOrTitle v --> doShift ws | (v, ws) <- myShifts ]
     , [ isDialog       --> doCenterFloat                    ]
     , [ isFullscreen   --> doF W.focusDown <+> doFullFloat  ]
+    , [ classOrName  v --> a          | (v, a ) <- myFloats ]
+    , [ classOrTitle v --> doShift ws | (v, ws) <- myShifts ]
     ]
 
     where
@@ -109,7 +107,7 @@ myKeys = [ ("M-p"   , spawn "launcher"        ) -- dmenu app launcher
 
     where
 
-        spawnInScreen c = spawn . unwords $ myTerminal : ["-title", c, "-e bash -cl", "\"SCREEN_CONF=" ++ c, "screen -S", c, "-R -D", c ++ "\""]
+        spawnInScreen c = spawn . unwords $ myTerminal : [ "-title", c, "-e bash -cl", "\"SCREEN_CONF=" ++ c, "screen -S", c, "-R -D", c ++ "\"" ]
 
         myRestart = spawn $ "for pid in `pgrep conky`; do kill -9 $pid; done && "
                          ++ "for pid in `pgrep dzen2`; do kill -9 $pid; done && "
