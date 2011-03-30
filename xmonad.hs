@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 -- |
 -- Module      :  xmonad.hs
--- Copyright   :  (c) Patrick Brisbin 2010 
+-- Copyright   :  (c) Patrick Brisbin 2010
 -- License     :  as-is
 --
 -- Maintainer  :  pbrisbin@gmail.com
@@ -17,7 +17,7 @@ import XMonad
 import Dzen                         (DzenConf(..), spawnDzen, defaultDzen)
 import ScratchPadKeys               (scratchPadList, manageScratchPads, scratchPadKeys)
 import System.IO                    (Handle, hPutStrLn)
-import XMonad.Hooks.DynamicLog      (dynamicLogWithPP, dzenPP, PP(..), pad)
+import XMonad.Hooks.DynamicLog      (dynamicLogWithPP, dzenPP, PP(..), pad, dzenColor)
 import XMonad.Hooks.ManageDocks     (avoidStruts, manageDocks)
 import XMonad.Hooks.ManageHelpers   (isDialog, isFullscreen, doFullFloat, doCenterFloat)
 import XMonad.Hooks.UrgencyHook     (withUrgencyHook, NoUrgencyHook(..))
@@ -28,12 +28,7 @@ import qualified XMonad.StackSet as W
 
 main :: IO ()
 main = do
-    d <- spawnDzen defaultDzen
-        { font     = Just "Verdana-8"
-        , fg_color = Just "#303030"
-        , bg_color = Just "#909090"
-        }
-
+    d <- spawnDzen defaultDzen { font = Just "Verdana-8" }
     xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig
         { terminal    = myTerminal
         , workspaces  = myWorkspaces
@@ -84,8 +79,10 @@ myLogHook :: Handle -> X ()
 myLogHook h = dynamicLogWithPP $ dzenPP
     { ppOutput = hPutStrLn h
     , ppSort   = getSortByXineramaRule
+    , ppTitle  = dzenColor "#909090" ""
+    , ppSep    = replicate 4 ' '
     , ppHidden = \ws -> if ws /= "NSP" then pad ws else ""
-    , ppLayout = \s  -> case s of
+    , ppLayout = dzenColor "#909090" "" . \s  -> case s of
         "Tall"          -> "/ /-/"
         "Mirror Tall"   -> "/-,-/"
         "Full"          -> "/   /"
@@ -93,16 +90,19 @@ myLogHook h = dynamicLogWithPP $ dzenPP
     }
 
 myKeys :: [(String, X())]
-myKeys = [ ("M-p"   , spawn "launcher"        ) -- dmenu app launcher
-         , ("M-S-p" , spawn "bashrun"         ) -- gmrun replacement
-         , ("M4-b"  , spawn "$BROWSER"        ) -- open web client
-         , ("M4-l"  , spawn "slock"           ) -- lock screen
-         , ("M4-a"  , spawn "msearch all"     ) -- search current playlist via dmenu
-         , ("M4-g"  , spawn "goodsong"        ) -- note current song as 'good'
-         , ("M4-S-g", spawn "goodsong -p"     ) -- play a random 'good' song
-         , ("M4-i"  , spawnInScreen "irssi"   ) -- open/attach IRC client in screen
-         , ("M4-r"  , spawnInScreen "rtorrent") -- open/attach rtorrent in screen 
-         , ("M-q"   , myRestart               ) -- restart xmonad
+myKeys = [ ("M-p"                   , spawn "launcher"        ) -- dmenu app launcher
+         , ("M-S-p"                 , spawn "bashrun"         ) -- gmrun replacement
+         , ("M4-b"                  , spawn "$BROWSER"        ) -- open web client
+         , ("M4-l"                  , spawn "slock"           ) -- lock screen
+         , ("M4-a"                  , spawn "msearch all"     ) -- search current playlist via dmenu
+         , ("M4-g"                  , spawn "goodsong"        ) -- note current song as 'good'
+         , ("M4-S-g"                , spawn "goodsong -p"     ) -- play a random 'good' song
+         , ("<XF86AudioMute>"       , spawn "ossvol -t"       ) -- toggle mute
+         , ("<XF86AudioLowerVolume>", spawn "ossvol -d 1"     ) -- volume down
+         , ("<XF86AudioRaiseVolume>", spawn "ossvol -i 1"     ) -- volume up
+         , ("M4-i"                  , spawnInScreen "irssi"   ) -- open/attach IRC client in screen
+         , ("M4-r"                  , spawnInScreen "rtorrent") -- open/attach rtorrent in screen
+         , ("M-q"                   , myRestart               ) -- restart xmonad
          ] ++ scratchPadKeys scratchPadList
 
     where
