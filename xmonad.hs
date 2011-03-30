@@ -123,32 +123,35 @@ myLayout = avoidStruts standardLayouts
 
 -- ManageHook {{{
 myManageHook :: ManageHook
-myManageHook = mainManageHook <+> manageDocks <+> manageFullScreen <+> manageScratchPads scratchPadList
+myManageHook = mainManageHook <+> manageDocks <+> manageScratchPads scratchPadList
 
     where
         -- the main managehook
         mainManageHook = composeAll $ concat
-            [ [ resource  =? r --> doIgnore         | r <- myIgnores ]
-            , [ className =? c --> doShift "2-web"  | c <- myWebs    ]
-            , [ title     =? t --> doShift "3-chat" | t <- myChats   ]
-            , [ className =? c --> doFloat          | c <- myFloats  ]
-            , [ className =? c --> doCenterFloat    | c <- myCFloats ]
-            , [ name      =? n --> doCenterFloat    | n <- myCNames  ]
-            , [ isDialog       --> doCenterFloat                     ]
+            [ [ classOrName  v --> a             | (v,a)  <- myFloats ]
+            , [ classOrTitle v --> doShift ws    | (v,ws) <- myShifts ]
+            , [ isDialog       --> doCenterFloat                      ]
+            , [ isFullscreen   --> doF W.focusDown <+> doFullFloat    ]
             ]
 
-        -- fullscreen but still allow focusing of other WSs
-        manageFullScreen = isFullscreen --> doF W.focusDown <+> doFullFloat
+        classOrName  x = className =? x <||> stringProperty "WM_NAME" =? x
+        classOrTitle x = className =? x <||> title                    =? x
 
-        role = stringProperty "WM_WINDOW_ROLE"
-        name = stringProperty "WM_NAME"
+        myFloats  = [ ("MPlayer"   , doFloat      )
+                    , ("Zenity"    , doFloat      )
+                    , ("VirtualBox", doFloat      )
+                    , ("rdesktop"  , doFloat      )
+                    , ("Xmessage"  , doCenterFloat)
+                    , ("XFontSel"  , doCenterFloat)
+                    , ("bashrun"   , doCenterFloat)
+                    ]
 
-        myIgnores = ["desktop","desktop_window"]
-        myChats   = ["irssi","mutt" ]
-        myWebs    = ["Uzbl","Uzbl-core","Jumanji","Chromium"]
-        myFloats  = ["MPlayer","Zenity","VirtualBox","rdesktop"]
-        myCFloats = ["Xmessage","Save As...","XFontSel"]
-        myCNames  = ["bashrun"]
+        myShifts  = [ ("Uzbl"     , "2-web" )
+                    , ("Uzbl-core", "2-web" )
+                    , ("Jumanji"  , "2-web" )
+                    , ("Chromium" , "2-web" )
+                    , ("irssi"    , "3-chat")
+                    ]
 
 -- }}}
 
@@ -220,7 +223,7 @@ myLogHook h = dynamicLogWithPP $ defaultPP
     , ppTitle           = highlightBase colorFG6 . shorten 100
     , ppLayout          = dzenFG colorFG2 . renameLayouts
     , ppSort            = getSortByXineramaRule
-    , ppExtras          = [myMail, myUpdates]
+    , ppExtras          = [myMail]
     , ppOutput          = hPutStrLn h
     }
 
@@ -239,22 +242,7 @@ myLogHook h = dynamicLogWithPP $ defaultPP
         dzenFG  c = dzenColor  c ""
         dzenFGL c = dzenColorL c "" 
 
-        -- custom loggers
-        myMail    = wrapL "Mail: "    "" . dzenFGL colorFG6 $ maildirNew "/home/patrick/Mail/GMail/INBOX"
-        myUpdates = wrapL "Updates: " "" . dzenFGL colorFG6 $ countOutputLines "pacman -Qu"
-        
-        -- count the lines of output of an arbitary command
-        countOutputLines :: String -> Logger
-        countOutputLines c = io $ do
-            (_, out, _, _) <- runInteractiveCommand c
-            doCount out `catch` const (return Nothing)
-        
-            where
-                -- 0 returns nothing
-                doCount h = hGetContents h >>= \c ->
-                    case length $ lines c of
-                        0 -> return Nothing
-                        n -> return $ Just $ show n
+        myMail = wrapL "Mail: "    "" . dzenFGL colorFG6 $ maildirNew "/home/patrick/Mail/GMail/INBOX"
 
         renameLayouts s = case s of
             "Hinted ResizableTall"          -> "/ /-/"
