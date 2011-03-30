@@ -1,47 +1,35 @@
-# My xmonad configuration
+# My (simpler) xmonad configuration
 
-[Screenshot](http://pbrisbin.com/static/screenshots/current_desktop.png)
+My master branch feels bloated and slow. This branch is a minimalist 
+version with only the elements I really need/want -- I'll be running 
+with this branch for a while and it may eventually become master.
 
 ## Custom modules
 
 * Dzen: Easier dzen definitions
 * ScratchPadKeys: Importable scratchpads
-* SendFile: XPrompt to send a file attachment via mutt
-* RssReader: A statusbar Rss Reader
 
-## In use with
+## Compiles on
 
-From arch repos Via `pacman -S`:
-
-* ghc 7.0.2
-
-From hackage via `cabal install`:
-
-* mtl 2.0.1.0
-* X11 1.5.0
-* X11-xft 0.3
-* utf8-string 0.3.6
-* xmonad 0.9.2
-* xmonad-contrib 0.9.2
-
-Usually, you can prefix with *haskell-* to install via pacman.
+* ghc 6 or 7
+* xmonad 0.9 or darcs
+* xmonad-contrib 0.9 or darcs
 
 ## Try it
 
 Backup your original configuration:
 
-    mv ~/.xmonad ~/.xmonad.bak
+    mv ~/.xmonad ~/xmonad.bak
 
-Pull down mine:
+Pull down mine and checkout this simpler branch:
 
     git clone git://github.com/pbrisbin/xmonad-config.git ~/.xmonad
+    cd ~/.xmonad && git checkout simpler
 
-I use a few modules you may not have installed (ex: http and tagsoup), 
-so you should verify everything compiles before actually restarting:
+Verify everything compiles before actually restarting:
 
-    cd ~/.xmonad
     ghci -ilib xmonad.hs
 
-This will notify you of any missing modules.
+This will notify you of any problems.
 
 Press `Ctrl-d` to exit ghci, then `M-q` to restart xmonad.
