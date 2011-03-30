@@ -8,21 +8,20 @@
 -- Stability   :  unstable
 -- Portability :  unportable
 --
--- Now available in git http://github.com/pbrisbin/xmonad-config
+-- http://github.com/pbrisbin/xmonad-config/tree/simpler
 --
 -------------------------------------------------------------------------------
 
 import XMonad
 
-import System.IO                      (Handle, hPutStrLn)
-import XMonad.Hooks.DynamicLog        (dynamicLogWithPP, defaultPP, PP(..), 
-                                        pad, shorten, dzenColor, dzenStrip)
-import XMonad.Hooks.ManageDocks       (manageDocks)
-import XMonad.Hooks.ManageHelpers     (isDialog, isFullscreen, doFullFloat, 
-                                        doCenterFloat)
-import XMonad.Hooks.UrgencyHook       (withUrgencyHook, NoUrgencyHook(..))
-import XMonad.Util.EZConfig           (additionalKeysP)
-import XMonad.Util.WorkspaceCompare   (getSortByXineramaRule)
+import System.IO                    (Handle, hPutStrLn)
+import XMonad.Hooks.DynamicLog      (dynamicLogWithPP, dzenPP, PP(..), pad)
+import XMonad.Hooks.ManageDocks     (avoidStruts, manageDocks)
+import XMonad.Hooks.ManageHelpers   (isDialog, isFullscreen, doFullFloat, doCenterFloat)
+import XMonad.Hooks.UrgencyHook     (withUrgencyHook, NoUrgencyHook(..))
+import XMonad.Util.EZConfig         (additionalKeysP)
+import XMonad.Util.WorkspaceCompare (getSortByXineramaRule)
+
 import qualified XMonad.StackSet as W
 
 import Dzen           -- http://pbrisbin.com/xmonad/docs/Dzen.html
@@ -30,12 +29,20 @@ import ScratchPadKeys -- http://pbrisbin.com/xmonad/docs/ScratchPadKeys.html
 
 main :: IO ()
 main = do
-    d <- spawnDzen myStatusBar
+    spawn "conky"
+
+    d <- spawnDzen defaultDzen
+        { font     = Just "Verdana-8"
+        , fg_color = Just "#303030"
+        , bg_color = Just "#909090"
+        }
+
     xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig
         { terminal   = myTerminal
         , workspaces = myWorkspaces
-        , manageHook = myManageHook
         , logHook    = myLogHook d
+        , manageHook = myManageHook <+> manageDocks <+> manageHook defaultConfig
+        , layoutHook = avoidStruts $ layoutHook defaultConfig
         } `additionalKeysP` myKeys
 
 myTerminal :: String
@@ -44,40 +51,20 @@ myTerminal = "urxvtc"
 myWorkspaces :: [WorkspaceId]
 myWorkspaces = ["1-main","2-web","3-chat"] ++ map show ([4..9] :: [Int])
 
-myFont, colorBG, 
-    colorFG, colorFG2, 
-    colorFG3, colorFG4:: String
-
-myFont     = "Verdana-8"
-colorBG    = "#303030"
-colorFG    = "#909090"
-colorFG2   = "#bbbbbb"
-colorFG3   = "#c4df90"
-colorFG4   = "#ffff80"
-
-myStatusBar :: DzenConf
-myStatusBar = defaultDzen
-    { font     = Just myFont
-    , fg_color = Just colorFG
-    , bg_color = Just colorBG
-    }
-
 myManageHook :: ManageHook
-myManageHook = mainManageHook <+> manageDocks <+> manageScratchPads scratchPadList
+myManageHook = (composeAll $ concat
+    [ [ classOrName  v --> a          | (v, a ) <- myFloats ]
+    , [ classOrTitle v --> doShift ws | (v, ws) <- myShifts ]
+    , [ isDialog       --> doCenterFloat                    ]
+    , [ isFullscreen   --> doF W.focusDown <+> doFullFloat  ]
+    ]) <+> manageScratchPads scratchPadList
 
     where
-        mainManageHook = composeAll $ concat
-            [ [ classOrName  v --> a             | (v,a)  <- myFloats ]
-            , [ classOrTitle v --> doShift ws    | (v,ws) <- myShifts ]
-            , [ isDialog       --> doCenterFloat                      ]
-            , [ isFullscreen   --> doF W.focusDown <+> doFullFloat    ]
-            ]
 
         classOrName  x = className =? x <||> stringProperty "WM_NAME" =? x
         classOrTitle x = className =? x <||> title                    =? x
 
-        myFloats  = [ ("MPlayer"   , doFloat      )
-                    , ("Zenity"    , doFloat      )
+        myFloats  = [ ("Zenity"    , doFloat      )
                     , ("VirtualBox", doFloat      )
                     , ("rdesktop"  , doFloat      )
                     , ("Xmessage"  , doCenterFloat)
@@ -93,58 +80,34 @@ myManageHook = mainManageHook <+> manageDocks <+> manageScratchPads scratchPadLi
                     ]
 
 myLogHook :: Handle -> X ()
-myLogHook h = dynamicLogWithPP $ defaultPP
-    { ppCurrent         = dzenColor colorFG3 "" . pad
-    , ppVisible         = dzenColor colorFG2 "" . pad
-    , ppUrgent          = dzenColor colorFG4 "" . pad . dzenStrip . noScratchPad
-    , ppHidden          = noScratchPad
-    , ppLayout          = renameLayouts
-    , ppSort            = getSortByXineramaRule
-    , ppHiddenNoWindows = namedOnly
-    , ppSep             = replicate 4 ' '
-    , ppWsSep           = []
-    , ppTitle           = shorten 100
-    , ppOutput          = hPutStrLn h
+myLogHook h = dynamicLogWithPP $ dzenPP
+    { ppOutput = hPutStrLn h
+    , ppSort   = getSortByXineramaRule
+    , ppHidden = \ws -> if ws /= "NSP" then pad ws else ""
+    , ppLayout = \s  -> case s of
+        "Tall"          -> "/ /-/"
+        "Mirror Tall"   -> "/-,-/"
+        "Full"          -> "/   /"
+        _               -> pad s
     }
 
-    where
-        namedOnly    ws = if any (`elem` ws) ['a'..'z'] then pad ws else ""
-        noScratchPad ws = if ws /= "NSP"                then pad ws else ""
-
-        renameLayouts s = case s of
-            "Tall"          -> "/ /-/"
-            "Mirror Tall"   -> "/-,-/"
-            "Full"          -> "/   /"
-            _               -> s
-
 myKeys :: [(String, X())]
-myKeys = [ ("M-p"     , spawn "launcher"   ) -- dmenu app launcher
-         , ("M-S-p"   , spawn "bashrun"    ) -- gmrun replacement
-         , ("M4-b"    , spawn "$BROWSER"   ) -- open web client
-         , ("M4-l"    , spawn "slock"      ) -- W-l to lock screen
-         , ("M4-a"    , spawn "msearch all") -- search current playlist via dmenu
-         , ("M4-g"    , spawn "goodsong"   ) -- note current song as 'good'
-         , ("M4-S-g"  , spawn "goodsong -p") -- play a random 'good' song
-         , ("M4-i"    , myIRC              ) -- open/attach IRC client in screen
-         , ("M4-r"    , myTorrents         ) -- open/attach rtorrent in screen 
-         , ("M-q"     , myRestart          ) -- restart xmonad
-
-         -- See http://pbrisbin.com/xmonad/docs/ScratchPadKeys.html and 
-         -- http://pbrisbin.com/posts/scratchpad_everything/
+myKeys = [ ("M-p"   , spawn "launcher"        ) -- dmenu app launcher
+         , ("M-S-p" , spawn "bashrun"         ) -- gmrun replacement
+         , ("M4-b"  , spawn "$BROWSER"        ) -- open web client
+         , ("M4-l"  , spawn "slock"           ) -- lock screen
+         , ("M4-a"  , spawn "msearch all"     ) -- search current playlist via dmenu
+         , ("M4-g"  , spawn "goodsong"        ) -- note current song as 'good'
+         , ("M4-S-g", spawn "goodsong -p"     ) -- play a random 'good' song
+         , ("M4-i"  , spawnInScreen "irssi"   ) -- open/attach IRC client in screen
+         , ("M4-r"  , spawnInScreen "rtorrent") -- open/attach rtorrent in screen 
+         , ("M-q"   , myRestart               ) -- restart xmonad
          ] ++ scratchPadKeys scratchPadList
 
     where
-        -- see http://pbrisbin.com/posts/screen_tricks/
-        myIRC      = spawnInScreen "irssi"
-        myTorrents = spawnInScreen "rtorrent"
 
-        spawnInScreen s = spawn $ unwords [ myTerminal, "-title", s, "-e bash -cl", command s ]
+        spawnInScreen c = spawn . unwords $ myTerminal : ["-title", c, "-e bash -cl", "\"SCREEN_CONF=" ++ c, "screen -S", c, "-R -D", c ++ "\""]
 
-            where
-                -- a quoted command to pass off to bash -cl
-                command s' = ("\""++) . (++"\"") $ unwords ["SCREEN_CONF=" ++ s', "screen -S", s', "-R -D", s']
-
-        -- kill all conky/dzen2 before executing default restart command
-        myRestart = spawn $ "for pid in `pgrep conky`; do kill -9 $pid; done && " ++
-                            "for pid in `pgrep dzen2`; do kill -9 $pid; done && " ++
-                            "xmonad --recompile && xmonad --restart"
+        myRestart = spawn $ "for pid in `pgrep conky`; do kill -9 $pid; done && "
+                         ++ "for pid in `pgrep dzen2`; do kill -9 $pid; done && "
+                         ++ "xmonad --recompile && xmonad --restart"
