@@ -21,6 +21,7 @@ import XMonad.Hooks.DynamicLog      (dynamicLogWithPP, dzenPP, PP(..), pad, dzen
 import XMonad.Hooks.ManageDocks     (avoidStruts, manageDocks)
 import XMonad.Hooks.ManageHelpers   (isDialog, isFullscreen, doFullFloat, doCenterFloat)
 import XMonad.Hooks.UrgencyHook     (withUrgencyHook, NoUrgencyHook(..))
+import XMonad.Layout.LayoutHints    (layoutHints)
 import XMonad.Util.EZConfig         (additionalKeysP)
 import XMonad.Util.WorkspaceCompare (getSortByXineramaRule)
 
@@ -32,14 +33,14 @@ main = do
     xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig
         { terminal    = "urxvtc"
         , workspaces  = myWorkspaces
-        , logHook     = myLogHook d
         , manageHook  = myManageHook
-        , layoutHook  = avoidStruts $ layoutHook defaultConfig
+        , layoutHook  = myLayout
+        , logHook     = myLogHook d
         , startupHook = spawn "conky"
         } `additionalKeysP` myKeys
 
 myWorkspaces :: [WorkspaceId]
-myWorkspaces = ["1-main","2-web","3-chat"] ++ map show ([4..9] :: [Int])
+myWorkspaces = ["1-main","2-web","3-chat"] ++ map show [4..9 :: Int]
 
 myManageHook :: ManageHook
 myManageHook = composeAll $ concat
@@ -53,23 +54,27 @@ myManageHook = composeAll $ concat
 
     where
         -- match on class, title, name or role
-        matchAny x = foldr (<||>) (return False) $ map (=? x) [className, title, name, role]
+        matchAny x = foldr ((<||>) . (=? x)) (return False) [className, title, name, role]
 
         name = stringProperty "WM_NAME"
         role = stringProperty "WM_ROLE"
 
         myActions = [ ("Zenity"    , doFloat         )
-                    , ("VirtualBox", doFloat         )
                     , ("rdesktop"  , doFloat         )
                     , ("Xmessage"  , doCenterFloat   )
                     , ("XFontSel"  , doCenterFloat   )
-                    , ("bashrun"   , doCenterFloat   )
+                    , ("gmrun"     , doCenterFloat   )
                     , ("Uzbl"      , doShift "2-web" )
                     , ("Uzbl-core" , doShift "2-web" )
-                    , ("Jumanji"   , doShift "2-web" )
                     , ("Chromium"  , doShift "2-web" )
                     , ("irssi"     , doShift "3-chat")
                     ]
+
+myLayout = avoidStruts $ tall ||| Mirror tall ||| full
+
+    where
+        tall = layoutHints $ Tall 1 (3/100) (1/2)
+        full = layoutHints Full
 
 myLogHook :: Handle -> X ()
 myLogHook h = dynamicLogWithPP $ dzenPP
@@ -78,10 +83,10 @@ myLogHook h = dynamicLogWithPP $ dzenPP
     , ppTitle  = dzenColor "#909090" ""
     , ppHidden = \ws -> if ws /= "NSP" then pad ws else ""
     , ppLayout = dzenColor "#909090" "" . pad . \s  -> case s of
-        "Tall"          -> "/ /-/"
-        "Mirror Tall"   -> "/-,-/"
-        "Full"          -> "/   /"
-        _               -> pad s
+        "Hinted Tall"          -> "/ /-/"
+        "Mirror Hinted Tall"   -> "/-,-/"
+        "Hinted Full"          -> "/   /"
+        _                      -> pad s
     }
 
 myKeys :: [(String, X())]
