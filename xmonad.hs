@@ -1,4 +1,3 @@
-{-# OPTIONS -fno-warn-missing-signatures #-}
 -------------------------------------------------------------------------------
 -- |
 -- Module      :  xmonad.hs
@@ -34,8 +33,8 @@ main = do
     xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig
         { terminal    = "urxvtc"
         , workspaces  = myWorkspaces
-        , manageHook  = myManageHook
-        , layoutHook  = myLayout
+        , manageHook  = myManageHook <+> manageHook defaultConfig
+        , layoutHook  = avoidStruts . layoutHints $ layoutHook defaultConfig
         , logHook     = myLogHook d
         , startupHook = spawn "conky"
         } `additionalKeysP` myKeys
@@ -46,7 +45,6 @@ myWorkspaces = ["1-main","2-web","3-chat"] ++ map show [4..9 :: Int]
 myManageHook :: ManageHook
 myManageHook = composeAll $ concat
     [ [ manageDocks                                       ]
-    , [ manageHook defaultConfig                          ]
     , [ manageScratchPads scratchPadList                  ]
     , [ isDialog      --> doCenterFloat                   ]
     , [ isFullscreen  --> doF W.focusDown <+> doFullFloat ]
@@ -70,14 +68,6 @@ myManageHook = composeAll $ concat
                     , ("Chromium"  , doShift "2-web" )
                     , ("irssi"     , doShift "3-chat")
                     ]
-
-myLayout = avoidStruts $ tall ||| wide ||| full
-
-    where
-        tiled = Tall 1 (3/100) (1/2)
-        tall  = layoutHints tiled
-        wide  = layoutHints $ Mirror tiled
-        full  = layoutHints Full
 
 myLogHook :: Handle -> X ()
 myLogHook h = dynamicLogWithPP $ dzenPP
