@@ -48,7 +48,7 @@ myManageHook = composeAll $ concat
     , [ manageScratchPads scratchPadList                  ]
     , [ isDialog      --> doCenterFloat                   ]
     , [ isFullscreen  --> doF W.focusDown <+> doFullFloat ]
-    , [ matchAny    v --> a | (v, a ) <- myActions        ]
+    , [ matchAny    v --> a | (v,a) <- myActions          ]
     ]
 
     where
@@ -58,10 +58,8 @@ myManageHook = composeAll $ concat
         name = stringProperty "WM_NAME"
         role = stringProperty "WM_ROLE"
 
-        myActions = [ ("Zenity"    , doFloat         )
-                    , ("rdesktop"  , doFloat         )
+        myActions = [ ("rdesktop"  , doFloat         )
                     , ("Xmessage"  , doCenterFloat   )
-                    , ("XFontSel"  , doCenterFloat   )
                     , ("Gmrun"     , doCenterFloat   )
                     , ("Uzbl"      , doShift "2-web" )
                     , ("Uzbl-core" , doShift "2-web" )
@@ -73,13 +71,14 @@ myLogHook :: Handle -> X ()
 myLogHook h = dynamicLogWithPP $ dzenPP
     { ppOutput = hPutStrLn h
     , ppSort   = getSortByXineramaRule
-    , ppTitle  = dzenColor "#909090" ""
     , ppHidden = \ws -> if ws /= "NSP" then pad ws else ""
-    , ppLayout = dzenColor "#909090" "" . pad . \s  -> case s of
-        "Hinted Tall"          -> "/ /-/"
-        "Hinted Mirror Tall"   -> "/-,-/"
-        "Hinted Full"          -> "/   /"
-        _                      -> pad s
+    , ppTitle  = dzenColor "#909090" "" . pad
+    , ppLayout = dzenColor "#909090" "" . pad . \s ->
+        case s of
+            "Hinted Tall"          -> "/ /-/"
+            "Hinted Mirror Tall"   -> "/-,-/"
+            "Hinted Full"          -> "/   /"
+            _                      -> pad s
     }
 
 myKeys :: [(String, X())]
