@@ -85,8 +85,7 @@ myLogHook h = dynamicLogWithPP $ dzenPP
     }
 
 myKeys :: [(String, X())]
-myKeys = [ ("M-p"                   , spawn "launcher"        ) -- dmenu app launcher
-         , ("M-S-p"                 , spawn "bashrun"         ) -- gmrun replacement
+myKeys = [ ("M-p"                   , yeganesh                ) -- dmenu app launcher
          , ("M4-b"                  , spawn "$BROWSER"        ) -- open web client
          , ("M4-l"                  , spawn "slock"           ) -- lock screen
          , ("M4-a"                  , spawn "msearch all"     ) -- search current playlist via dmenu
@@ -101,6 +100,7 @@ myKeys = [ ("M-p"                   , spawn "launcher"        ) -- dmenu app lau
          ] ++ scratchPadKeys scratchPadList
 
     where
+        yeganesh = spawn "exe=`dmenu_path | yeganesh -- $DMENU_OPTIONS` && eval \"exec $exe\""
 
         spawnInScreen c = runInTerminal [ "-title", c, "-e bash -cl", "\"SCREEN_CONF=" ++ c, "screen -S", c, "-R -D", c ++ "\"" ]
 
