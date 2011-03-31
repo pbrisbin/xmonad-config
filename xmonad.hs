@@ -30,7 +30,8 @@ main :: IO ()
 main = do
     d <- spawnDzen defaultDzen { font = Just "Verdana-8" }
     xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig
-        { workspaces  = myWorkspaces
+        { terminal    = "urxvtc"
+        , workspaces  = myWorkspaces
         , logHook     = myLogHook d
         , manageHook  = myManageHook
         , layoutHook  = avoidStruts $ layoutHook defaultConfig
