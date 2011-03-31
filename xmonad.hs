@@ -62,7 +62,7 @@ myManageHook = composeAll $ concat
                     , ("rdesktop"  , doFloat         )
                     , ("Xmessage"  , doCenterFloat   )
                     , ("XFontSel"  , doCenterFloat   )
-                    , ("gmrun"     , doCenterFloat   )
+                    , ("Gmrun"     , doCenterFloat   )
                     , ("Uzbl"      , doShift "2-web" )
                     , ("Uzbl-core" , doShift "2-web" )
                     , ("Chromium"  , doShift "2-web" )
@@ -77,7 +77,7 @@ myLogHook h = dynamicLogWithPP $ dzenPP
     , ppHidden = \ws -> if ws /= "NSP" then pad ws else ""
     , ppLayout = dzenColor "#909090" "" . pad . \s  -> case s of
         "Hinted Tall"          -> "/ /-/"
-        "Mirror Hinted Tall"   -> "/-,-/"
+        "Hinted Mirror Tall"   -> "/-,-/"
         "Hinted Full"          -> "/   /"
         _                      -> pad s
     }
