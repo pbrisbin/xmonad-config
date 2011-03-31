@@ -70,11 +70,13 @@ myManageHook = composeAll $ concat
                     , ("irssi"     , doShift "3-chat")
                     ]
 
-myLayout = avoidStruts $ tall ||| Mirror tall ||| full
+myLayout = avoidStruts $ tall ||| wide ||| full
 
     where
-        tall = layoutHints $ Tall 1 (3/100) (1/2)
-        full = layoutHints Full
+        tiled = Tall 1 (3/100) (1/2)
+        tall  = layoutHints tiled
+        wide  = layoutHints $ Mirror tiled
+        full  = layoutHints Full
 
 myLogHook :: Handle -> X ()
 myLogHook h = dynamicLogWithPP $ dzenPP
