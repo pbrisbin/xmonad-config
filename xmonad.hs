@@ -14,72 +14,41 @@
 
 import XMonad
 
-import Dzen                         (DzenConf(..), spawnDzen, defaultDzen)
-import ScratchPadKeys               (scratchPadList, manageScratchPads, scratchPadKeys, runInTerminal)
-import System.IO                    (Handle, hPutStrLn)
-import XMonad.Hooks.DynamicLog      (dynamicLogWithPP, dzenPP, PP(..), pad, dzenColor)
-import XMonad.Hooks.ManageDocks     (avoidStruts, manageDocks)
-import XMonad.Hooks.ManageHelpers   (isDialog, isFullscreen, doFullFloat, doCenterFloat)
-import XMonad.Hooks.UrgencyHook     (withUrgencyHook, NoUrgencyHook(..))
-import XMonad.Layout.LayoutHints    (layoutHints)
-import XMonad.Util.EZConfig         (additionalKeysP)
-import XMonad.Util.WorkspaceCompare (getSortByXineramaRule)
+-- most of my config lies here
+import Utils                      (pbWorkspaces, pbLayout, pbManageHook, pbPP, 
+                                    matchAny, yeganesh, spawnInScreen, cleanStart) 
 
-import qualified XMonad.StackSet as W
+import Dzen                       (DzenConf(..), spawnDzen, defaultDzen)
+import ScratchPadKeys             (scratchPadList, manageScratchPads, scratchPadKeys)
+import System.IO                  (hPutStrLn)
+import XMonad.Hooks.DynamicLog    (dynamicLogWithPP, PP(..))
+import XMonad.Hooks.ManageHelpers (doCenterFloat)
+import XMonad.Hooks.UrgencyHook   (withUrgencyHook, NoUrgencyHook(..))
+import XMonad.Util.EZConfig       (additionalKeysP)
 
 main :: IO ()
 main = do
     d <- spawnDzen defaultDzen { font = Just "Verdana-8" }
     xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig
         { terminal    = "urxvtc"
-        , workspaces  = myWorkspaces
-        , manageHook  = myManageHook <+> manageHook defaultConfig
-        , layoutHook  = avoidStruts . layoutHints $ layoutHook defaultConfig
-        , logHook     = myLogHook d
+        , workspaces  = pbWorkspaces
+        , layoutHook  = pbLayout
+        , manageHook  = pbManageHook <+> myManageHook
+        , logHook     = dynamicLogWithPP $ pbPP { ppOutput = hPutStrLn d }
         , startupHook = spawn "conky"
         } `additionalKeysP` myKeys
 
-myWorkspaces :: [WorkspaceId]
-myWorkspaces = ["1-main","2-web","3-chat"] ++ map show [4..9 :: Int]
-
 myManageHook :: ManageHook
-myManageHook = composeAll $ concat
-    [ [ manageDocks                                       ]
-    , [ manageScratchPads scratchPadList                  ]
-    , [ isDialog      --> doCenterFloat                   ]
-    , [ isFullscreen  --> doF W.focusDown <+> doFullFloat ]
-    , [ matchAny    v --> a | (v,a) <- myActions          ]
-    ]
+myManageHook = composeAll [ matchAny v --> a | (v,a) <- myActions ] <+> manageScratchPads scratchPadList
 
-    where
-        -- match on class, title, name or role
-        matchAny x = foldr ((<||>) . (=? x)) (return False) [className, title, name, role]
-
-        name = stringProperty "WM_NAME"
-        role = stringProperty "WM_ROLE"
-
-        myActions = [ ("rdesktop"  , doFloat         )
-                    , ("Xmessage"  , doCenterFloat   )
-                    , ("Gmrun"     , doCenterFloat   )
-                    , ("Uzbl"      , doShift "2-web" )
-                    , ("Uzbl-core" , doShift "2-web" )
-                    , ("Chromium"  , doShift "2-web" )
-                    , ("irssi"     , doShift "3-chat")
-                    ]
-
-myLogHook :: Handle -> X ()
-myLogHook h = dynamicLogWithPP $ dzenPP
-    { ppOutput = hPutStrLn h
-    , ppSort   = getSortByXineramaRule
-    , ppHidden = \ws -> if ws /= "NSP" then pad ws else ""
-    , ppTitle  = dzenColor "#909090" "" . pad
-    , ppLayout = dzenColor "#909090" "" . pad . \s ->
-        case s of
-            "Hinted Tall"          -> "/ /-/"
-            "Hinted Mirror Tall"   -> "/-,-/"
-            "Hinted Full"          -> "/   /"
-            _                      -> pad s
-    }
+    where myActions = [ ("rdesktop"  , doFloat         )
+                      , ("Xmessage"  , doCenterFloat   )
+                      , ("Gmrun"     , doCenterFloat   )
+                      , ("Uzbl"      , doShift "2-web" )
+                      , ("Uzbl-core" , doShift "2-web" )
+                      , ("Chromium"  , doShift "2-web" )
+                      , ("irssi"     , doShift "3-chat")
+                      ]
 
 myKeys :: [(String, X())]
 myKeys = [ ("M-p"                   , yeganesh                ) -- dmenu app launcher
@@ -93,15 +62,5 @@ myKeys = [ ("M-p"                   , yeganesh                ) -- dmenu app lau
          , ("<XF86AudioRaiseVolume>", spawn "ossvol -i 1"     ) -- volume up
          , ("M4-i"                  , spawnInScreen "irssi"   ) -- open/attach IRC client in screen
          , ("M4-r"                  , spawnInScreen "rtorrent") -- open/attach rtorrent in screen
-         , ("M-q"                   , myRestart               ) -- restart xmonad
+         , ("M-q"                   , cleanStart              ) -- restart xmonad
          ] ++ scratchPadKeys scratchPadList
-
-    where
-        yeganesh = spawn "exe=`dmenu_path | yeganesh -- $DMENU_OPTIONS` && eval \"exec $exe\""
-
-        spawnInScreen c = runInTerminal [ "-title", c, "-e bash -cl", "\"SCREEN_CONF=" ++ c, "screen -S", c, "-R -D", c ++ "\"" ]
-
-        -- kill conkys and dzen2s for they will be restarted
-        myRestart = spawn $ "for pid in `pgrep conky`; do kill -9 $pid; done && "
-                         ++ "for pid in `pgrep dzen2`; do kill -9 $pid; done && "
-                         ++ "xmonad --recompile && xmonad --restart"

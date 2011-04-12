@@ -27,8 +27,6 @@ module ScratchPadKeys
     , manageScratchPads
     , scratchPadKeys
     , spawnScratchpad
-    , runInTerminal
-    , mkTermSP
     -- * Scrachpads
     -- $scratchpads
     , scratchPadList
@@ -45,10 +43,11 @@ module ScratchPadKeys
 
 import XMonad
 import XMonad.Actions.DynamicWorkspaces  (addHiddenWorkspace)
-import XMonad.ManageHook                 (composeAll)
 import XMonad.Hooks.ManageHelpers        (doRectFloat)
 import Control.Arrow                     ((&&&))
-import Control.Monad                     (filterM, when)
+import Control.Monad                     (filterM, unless)
+
+import Utils (runInTerminal)
 
 import qualified XMonad.StackSet as W
 
@@ -58,6 +57,9 @@ import qualified XMonad.StackSet as W
 -- will need to be using /EZConfig/ notation. Then, add the source code
 -- for this module to @~\/.xmonad\/lib\/ScratchPadKeys.hs@ and add the
 -- following to your @~\/.xmonad\/xmonad.hs@:
+--
+-- Note: You will also need @'Utils.runInTerminal'@ which can be found 
+-- in @lib\/Utils.hs@.
 --
 -- > import ScratchPadKeys
 -- > import XMonad.Util.EZConfig (additionalKeysP)
@@ -91,10 +93,6 @@ data ScratchPad = ScratchPad
     , hook    :: ManageHook -- ^ the way to manage it when it's visible
     }
 
--- | A helper to execute a command using the user's defined terminal
-runInTerminal :: [String] -> X ()
-runInTerminal args = asks config >>= \c@XConfig { terminal = t } -> spawn $ unwords (t:args)
-
 -- | Produce a managehook to manage all scratchpads in the passed list
 manageScratchPads :: [ScratchPad] -> ManageHook
 manageScratchPads = composeAll . fmap (\c -> query c --> hook c)
@@ -112,8 +110,8 @@ spawnScratchpad sp = withWindowSet $ \s -> do
 
     case filterCurrent of
         (x:_) -> do
-            when 
-                (null . filter ((== "NSP") . W.tag) $ W.workspaces s) $ 
+            unless 
+                (any ((== "NSP") . W.tag) $ W.workspaces s) $ 
                 addHiddenWorkspace "NSP"
 
             windows $ W.shiftWin "NSP" x
