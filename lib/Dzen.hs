@@ -170,9 +170,9 @@ dzenArgs d = do
           ++ addOpt ("-ta", fmap show  $ alignment  d)
           ++ addOpt ("-y" , fmap show  $ y_position d)
           ++ addOpt ("-h" , fmap show  $ height     d)
-          ++ addOpt ("-xs", fmap show  $ s           )
-          ++ addOpt ("-x" , fmap show  $ x           )
-          ++ addOpt ("-w" , fmap show  $ w           )
+          ++ addOpt ("-xs", fmap show s              )
+          ++ addOpt ("-x" , fmap show x              )
+          ++ addOpt ("-w" , fmap show w              )
           ++ addExec (exec d)
           ++ addargs d
 
