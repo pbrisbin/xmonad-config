@@ -27,6 +27,9 @@ module Utils
     , runInTerminal
     , spawnInScreen
     , cleanStart
+    , SpawnSomething(..)
+    , pbUrgencyHook
+    , pbUrgencyConfig
     ) where
 
 import XMonad
@@ -34,6 +37,7 @@ import XMonad
 import XMonad.Hooks.DynamicLog      (dzenPP, PP(..), pad, dzenColor)
 import XMonad.Hooks.ManageDocks     (manageDocks, avoidStruts)
 import XMonad.Hooks.ManageHelpers   (isDialog, isFullscreen, doFullFloat, doCenterFloat)
+import XMonad.Hooks.UrgencyHook     (UrgencyHook(..), UrgencyConfig(..), SuppressWhen(OnScreen), RemindWhen(Dont))
 import XMonad.Layout.LayoutHints    (layoutHints)
 import XMonad.Util.WorkspaceCompare (getSortByXineramaRule)
 
@@ -87,6 +91,22 @@ pbPP = dzenPP
 -- | Hide the "NSP" workspace
 hideNSP :: WorkspaceId -> String
 hideNSP ws = if ws /= "NSP" then pad ws else ""
+
+
+-- | Spawn any command on urgent; discards the workspace information
+data SpawnSomething = SpawnSomething String deriving (Read, Show)
+
+instance UrgencyHook SpawnSomething where
+    urgencyHook (SpawnSomething s) _ = spawn s
+
+-- | Ding! on urgent via ossplay and a sound stolen from Gajim
+pbUrgencyHook :: SpawnSomething
+pbUrgencyHook = SpawnSomething "ossplay -q /usr/share/gajim/data/sounds/message2.wav"
+
+-- | Show urgent even on visible non-focused workspace and don't ding me 
+--   repeatedly
+pbUrgencyConfig :: UrgencyConfig
+pbUrgencyConfig = UrgencyConfig OnScreen Dont
 
 -- | Spawns yeganesh <http://dmwit.com/yeganesh/>, set the environment 
 --   variable @$DMENU_OPTIONS@ to customize dmenu appearance.

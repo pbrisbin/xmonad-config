@@ -15,21 +15,20 @@
 import XMonad
 
 -- most of my config lies here
-import Utils                      (pbWorkspaces, pbLayout, pbManageHook, pbPP, 
-                                    matchAny, yeganesh, spawnInScreen, cleanStart) 
+import Utils
 
 import Dzen                       (DzenConf(..), spawnDzen, defaultDzen)
 import ScratchPadKeys             (scratchPadList, manageScratchPads, scratchPadKeys)
 import System.IO                  (hPutStrLn)
 import XMonad.Hooks.DynamicLog    (dynamicLogWithPP, PP(..))
 import XMonad.Hooks.ManageHelpers (doCenterFloat)
-import XMonad.Hooks.UrgencyHook   (withUrgencyHook, NoUrgencyHook(..))
+import XMonad.Hooks.UrgencyHook   (withUrgencyHookC)
 import XMonad.Util.EZConfig       (additionalKeysP)
 
 main :: IO ()
 main = do
     d <- spawnDzen defaultDzen { font = Just "Verdana-8" }
-    xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig
+    xmonad $ withUrgencyHookC pbUrgencyHook pbUrgencyConfig $ defaultConfig
         { terminal    = "urxvtc"
         , workspaces  = pbWorkspaces
         , layoutHook  = pbLayout
