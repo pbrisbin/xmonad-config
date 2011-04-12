@@ -69,7 +69,6 @@ name = stringProperty "WM_NAME"
 role :: Query String
 role = stringProperty "WM_ROLE"
 
--- | Same as @defaultConfig@, just avoid struts and hinted.
 pbLayout = avoidStruts . layoutHints $ layoutHook defaultConfig
 
 -- | My pretty printer. @dzenPP@ plus sorting by Xinerama, softer 
@@ -91,7 +90,6 @@ pbPP = dzenPP
 -- | Hide the "NSP" workspace
 hideNSP :: WorkspaceId -> String
 hideNSP ws = if ws /= "NSP" then pad ws else ""
-
 
 -- | Spawn any command on urgent; discards the workspace information
 data SpawnSomething = SpawnSomething String deriving (Read, Show)
