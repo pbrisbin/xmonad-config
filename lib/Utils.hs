@@ -15,21 +15,27 @@
 -------------------------------------------------------------------------------
 
 module Utils 
-    ( pbWorkspaces
+    ( 
+    -- * Config entries
+      pbWorkspaces
     , pbManageHook
+    , pbLayout
+    , pbPP
+
+    -- * Urgency
+    , SpawnSomething(..)
+    , pbUrgencyHook
+    , pbUrgencyConfig
+
+    -- * Utilies
     , matchAny
     , name
     , role
-    , pbLayout
-    , pbPP
     , hideNSP
     , yeganesh
     , runInTerminal
     , spawnInScreen
     , cleanStart
-    , SpawnSomething(..)
-    , pbUrgencyHook
-    , pbUrgencyConfig
     ) where
 
 import XMonad
