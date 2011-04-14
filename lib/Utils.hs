@@ -12,6 +12,11 @@
 -- Parts of my config that are general-purpose enough to be useful 
 -- outside the scope of my config.
 --
+-- This could be imported and used on its own without having to use "my" 
+-- config entirely.
+--
+-- haddocks: <http://pbrisbin.com/xmonad/docs/Utils.html>
+--
 -------------------------------------------------------------------------------
 
 module Utils 
@@ -27,7 +32,7 @@ module Utils
     , pbUrgencyHook
     , pbUrgencyConfig
 
-    -- * Utilies
+    -- * Utilities
     , matchAny
     , name
     , role
@@ -49,11 +54,11 @@ import XMonad.Util.WorkspaceCompare (getSortByXineramaRule)
 
 import qualified XMonad.StackSet as W
 
--- | The setup i like: a main, web and chat plus the rest numbered
+-- | The setup I like: a main, web and chat plus the rest numbered.
 pbWorkspaces :: [WorkspaceId]
 pbWorkspaces = ["1-main","2-web","3-chat"] ++ map show [4..9 :: Int]
 
--- | My manage hook. manages docks, dialogs and smarter full screening.
+-- | Default plus docks, dialogs and smarter full screening.
 pbManageHook :: ManageHook
 pbManageHook = composeAll $ concat
     [ [ manageDocks                                       ]
@@ -67,19 +72,23 @@ pbManageHook = composeAll $ concat
 matchAny :: String -> Query Bool
 matchAny x = foldr ((<||>) . (=? x)) (return False) [className, title, name, role]
 
--- | Match against @WM_NAME@
+-- | Match against @WM_NAME@.
 name :: Query String
 name = stringProperty "WM_NAME"
 
--- | Match against @WM_ROLE@
+-- | Match against @WM_ROLE@.
 role :: Query String
 role = stringProperty "WM_ROLE"
 
+-- Default plus hinting and avoidStruts>
 pbLayout = avoidStruts . layoutHints $ layoutHook defaultConfig
 
--- | My pretty printer. @dzenPP@ plus sorting by Xinerama, softer 
---   title/layout colors, hiding of the NSP workspace and a nice 
---   @ppLayout@ if you happen to use @'pbLayout'@
+-- | @dzenPP@ plus sorting by Xinerama, softer title/layout colors, 
+--   hiding of the NSP workspace and a nice @ppLayout@ if you happen to 
+--   use @'pbLayout'@.
+--
+-- > logHook = dynamicLogWithPP $ pbPP { ppOutput = hPutStrLn d }
+--
 pbPP :: PP
 pbPP = dzenPP
     { ppHidden = hideNSP
@@ -93,41 +102,46 @@ pbPP = dzenPP
             _                      -> pad s
     }
 
--- | Hide the "NSP" workspace
+-- | Hide the "NSP" workspace.
 hideNSP :: WorkspaceId -> String
 hideNSP ws = if ws /= "NSP" then pad ws else ""
 
--- | Spawn any command on urgent; discards the workspace information
+-- | Spawn any command on urgent; discards the workspace information.
 data SpawnSomething = SpawnSomething String deriving (Read, Show)
 
 instance UrgencyHook SpawnSomething where
     urgencyHook (SpawnSomething s) _ = spawn s
 
--- | Ding! on urgent via ossplay and a sound stolen from Gajim
+-- | Ding! on urgent via ossplay and a sound from Gajim.
 pbUrgencyHook :: SpawnSomething
 pbUrgencyHook = SpawnSomething "ossplay -q /usr/share/gajim/data/sounds/message2.wav"
 
--- | Default, but still show urgent on visible non-focused workspace
+-- | Default but still show urgent on visible non-focused workspace.
+--
+-- > xmonad $ withUrgencyHookC pbUrgencyHook pbUrgencyConfig $ defaultConfig
+--
 pbUrgencyConfig :: UrgencyConfig
 pbUrgencyConfig = urgencyConfig { suppressWhen = OnScreen }
 
 -- | Spawns yeganesh <http://dmwit.com/yeganesh/>, set the environment 
---   variable @$DMENU_OPTIONS@ to customize dmenu appearance.
+--   variable @$DMENU_OPTIONS@ to customize dmenu appearance, this is a 
+--   good @M-p@ replacement.
 yeganesh :: MonadIO m => m ()
 yeganesh = spawn "exe=`dmenu_path | yeganesh -- $DMENU_OPTIONS` && eval \"exec $exe\""
 
--- | Execute a command via the user-defined terminal.
+-- | Execute a command in the user-configured terminal.
+--
+-- > runInTerminal [ "screen", "-S", "my-session", "-R", "-D", "my-session" ]
+--
 runInTerminal :: [String] -> X ()
 runInTerminal args = asks config >>= \c@XConfig { terminal = t } -> spawn $ unwords (t:args)
 
--- | Spawn an app in screen in the way required by 
---   <http://pbrisbin.com/posts/screen_tricks>.
+-- | Spawn in accordance with <http://pbrisbin.com/posts/screen_tricks>.
 spawnInScreen :: String -> X ()
 spawnInScreen c = runInTerminal [ "-title", c, "-e bash -cl", "\"SCREEN_CONF=" ++ c, "screen -S", c, "-R -D", c ++ "\"" ]
 
 -- | Kill (@-9@) any running dzen and conky processes before executing 
---   the default restart (they will get restarted as well), this is a 
---   good @M-q@ replacement.
+--   the default restart command, this is a good @M-q@ replacement.
 cleanStart :: MonadIO m => m ()
 cleanStart = spawn $ "for pid in `pgrep conky`; do kill -9 $pid; done && "
                   ++ "for pid in `pgrep dzen2`; do kill -9 $pid; done && "

@@ -14,8 +14,7 @@
 
 import XMonad
 
--- most of my config lies here
-import Utils
+import Utils -- <http://pbrisbin.com/xmonad/docs/Utils.html>
 
 import Dzen                       (DzenConf(..), spawnDzen, defaultDzen)
 import ScratchPadKeys             (scratchPadList, manageScratchPads, scratchPadKeys)
