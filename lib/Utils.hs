@@ -37,7 +37,7 @@ import XMonad
 import XMonad.Hooks.DynamicLog      (dzenPP, PP(..), pad, dzenColor)
 import XMonad.Hooks.ManageDocks     (manageDocks, avoidStruts)
 import XMonad.Hooks.ManageHelpers   (isDialog, isFullscreen, doFullFloat, doCenterFloat)
-import XMonad.Hooks.UrgencyHook     (UrgencyHook(..), UrgencyConfig(..), SuppressWhen(OnScreen), RemindWhen(Dont))
+import XMonad.Hooks.UrgencyHook     (UrgencyHook(..), UrgencyConfig(..), urgencyConfig, SuppressWhen(OnScreen))
 import XMonad.Layout.LayoutHints    (layoutHints)
 import XMonad.Util.WorkspaceCompare (getSortByXineramaRule)
 
@@ -101,10 +101,9 @@ instance UrgencyHook SpawnSomething where
 pbUrgencyHook :: SpawnSomething
 pbUrgencyHook = SpawnSomething "ossplay -q /usr/share/gajim/data/sounds/message2.wav"
 
--- | Show urgent even on visible non-focused workspace and don't ding me 
---   repeatedly
+-- | Default, but still show urgent on visible non-focused workspace
 pbUrgencyConfig :: UrgencyConfig
-pbUrgencyConfig = UrgencyConfig OnScreen Dont
+pbUrgencyConfig = urgencyConfig { suppressWhen = OnScreen }
 
 -- | Spawns yeganesh <http://dmwit.com/yeganesh/>, set the environment 
 --   variable @$DMENU_OPTIONS@ to customize dmenu appearance.
