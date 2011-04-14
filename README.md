@@ -3,26 +3,26 @@
 Very stock but with a few tasteful tweaks. Most of the config actually 
 lies withing the Utils module.
 
-## Custom modules
+### Custom modules
 
 * Dzen: Easier dzen definitions
 * ScratchPadKeys: Importable scratchpads
 
 Other modules exist in `./lib` which I no longer use.
 
-## Compiles on
+### Compiles on
 
 * ghc 6 or 7
 * xmonad 0.9 or darcs
 * xmonad-contrib 0.9 or darcs
 
-## Try it
+### Try it
 
 Backup your original configuration:
 
     mv ~/.xmonad ~/xmonad.bak
 
-Pull down mine and checkout this simpler branch:
+Pull down mine:
 
     git clone git://github.com/pbrisbin/xmonad-config.git ~/.xmonad
 
