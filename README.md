@@ -1,13 +1,14 @@
-# My (simpler) xmonad configuration
+# My xmonad configuration
 
-My master branch feels bloated and slow. This branch is a minimalist 
-version with only the elements I really need/want -- I'll be running 
-with this branch for a while and it may eventually become master.
+Very stock but with a few tasteful tweaks. Most of the config actually 
+lies withing the Utils module.
 
 ## Custom modules
 
 * Dzen: Easier dzen definitions
 * ScratchPadKeys: Importable scratchpads
+
+Other modules exist in `./lib` which I no longer use.
 
 ## Compiles on
 
@@ -24,11 +25,10 @@ Backup your original configuration:
 Pull down mine and checkout this simpler branch:
 
     git clone git://github.com/pbrisbin/xmonad-config.git ~/.xmonad
-    cd ~/.xmonad && git checkout simpler
 
 Verify everything compiles before actually restarting:
 
-    ghci -ilib xmonad.hs
+    cd ~/.xmonad && ghci -ilib xmonad.hs
 
 This will notify you of any problems.
 

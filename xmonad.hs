@@ -8,7 +8,7 @@
 -- Stability   :  unstable
 -- Portability :  unportable
 --
--- http://github.com/pbrisbin/xmonad-config/tree/simpler
+-- http://github.com/pbrisbin/xmonad-config/
 --
 -------------------------------------------------------------------------------
 
