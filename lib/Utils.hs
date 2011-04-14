@@ -12,7 +12,7 @@
 -- Parts of my config that are general-purpose enough to be useful 
 -- outside the scope of my config.
 --
--- This could be imported and used on its own without having to use "my" 
+-- This could be imported and used on its own without having to use \"my\" 
 -- config entirely.
 --
 -- haddocks: <http://pbrisbin.com/xmonad/docs/Utils.html>
