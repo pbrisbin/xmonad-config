@@ -80,7 +80,7 @@ name = stringProperty "WM_NAME"
 role :: Query String
 role = stringProperty "WM_ROLE"
 
--- Default plus hinting and avoidStruts>
+-- Default plus hinting and avoidStruts
 pbLayout = avoidStruts . layoutHints $ layoutHook defaultConfig
 
 -- | @dzenPP@ plus sorting by Xinerama, softer title/layout colors, 
