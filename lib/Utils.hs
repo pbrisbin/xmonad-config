@@ -61,10 +61,10 @@ pbWorkspaces = ["1-main","2-web","3-chat"] ++ map show [4..9 :: Int]
 -- | Default plus docks, dialogs and smarter full screening.
 pbManageHook :: ManageHook
 pbManageHook = composeAll $ concat
-    [ [ manageDocks                                       ]
-    , [ manageHook defaultConfig                          ]
-    , [ isDialog      --> doCenterFloat                   ]
-    , [ isFullscreen  --> doF W.focusDown <+> doFullFloat ]
+    [ [ manageDocks                                      ]
+    , [ manageHook defaultConfig                         ]
+    , [ isDialog     --> doCenterFloat                   ]
+    , [ isFullscreen --> doF W.focusDown <+> doFullFloat ]
     ]
 
 -- | Match a string against any one of a window's class, title, name or 
@@ -80,7 +80,7 @@ name = stringProperty "WM_NAME"
 role :: Query String
 role = stringProperty "WM_ROLE"
 
--- Default plus hinting and avoidStruts
+-- Default plus hinting and avoidStruts.
 pbLayout = avoidStruts . layoutHints $ layoutHook defaultConfig
 
 -- | @dzenPP@ plus sorting by Xinerama, softer title/layout colors, 
@@ -134,7 +134,7 @@ yeganesh = spawn "exe=`dmenu_path | yeganesh -- $DMENU_OPTIONS` && eval \"exec $
 -- > runInTerminal [ "screen", "-S", "my-session", "-R", "-D", "my-session" ]
 --
 runInTerminal :: [String] -> X ()
-runInTerminal args = asks config >>= \c@XConfig { terminal = t } -> spawn $ unwords (t:args)
+runInTerminal args = asks config >>= \(XConfig { terminal = t }) -> spawn $ unwords (t:args)
 
 -- | Spawn in accordance with <http://pbrisbin.com/posts/screen_tricks>.
 spawnInScreen :: String -> X ()
