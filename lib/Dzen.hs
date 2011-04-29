@@ -38,7 +38,6 @@ module Dzen (
     ) where
 
 import Data.List (intercalate)
-import Data.Maybe (fromMaybe)
 import System.IO
 import System.Posix.IO
 import System.Posix.Process (executeFile, forkProcess, createSession)
@@ -120,10 +119,10 @@ spawnDzen d = do
     setFdOption wr CloseOnExec True
     h <- fdToHandle wr
     hSetBuffering h LineBuffering
-    forkProcess $ do
+    _ <- forkProcess $ do
+        _  <- createSession
+        _  <- dupTo rd stdInput
         dz <- dzen d
-        createSession
-        dupTo rd stdInput
         executeFile "/bin/sh" False ["-c", dz] Nothing
     return h
 
@@ -139,16 +138,16 @@ spawnToDzen x d = do
     hSetBuffering hout LineBuffering
 
     -- the dzen
-    forkProcess $ do
+    _ <- forkProcess $ do
+        _  <- createSession
+        _  <- dupTo rd stdInput
         dz <- dzen d
-        createSession
-        dupTo rd stdInput
         executeFile "/bin/sh" False ["-c", dz] Nothing
 
     -- the input process
-    forkProcess $ do
-        createSession
-        dupTo wr stdOutput
+    _ <- forkProcess $ do
+        _ <- createSession
+        _ <- dupTo wr stdOutput
         executeFile "/bin/sh" False ["-c", x] Nothing
 
     return ()
@@ -201,9 +200,9 @@ screenWidth s = do
 -- | Given a 'DzenWidth', give back the Maybe Int that can be used as an 
 --   argument for @-w@ or @-x@.
 mkWidth :: Maybe ScreenNum -> Maybe DzenWidth -> IO (Maybe Int)
-mkWidth Nothing w                   = mkWidth (Just 0) w
-mkWidth _       Nothing             = return Nothing
-mkWidth (Just s) (Just (Pixels x))  = return $ Just x
+mkWidth Nothing  w                  = mkWidth (Just 0) w
+mkWidth _        Nothing            = return Nothing
+mkWidth (Just _) (Just (Pixels x))  = return $ Just x
 mkWidth (Just s) (Just (Percent c)) = return . go =<< screenWidth s
     where
         go 0  = Nothing
