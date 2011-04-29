@@ -16,7 +16,7 @@ import XMonad
 
 import Utils -- <http://pbrisbin.com/xmonad/docs/Utils.html>
 
-import Dzen                       (DzenConf(..), spawnDzen, defaultDzen)
+import Dzen                       (DzenConf(screen), spawnDzen, spawnToDzen, defaultDzenXft)
 import ScratchPadKeys             (scratchPadList, manageScratchPads, scratchPadKeys)
 import System.IO                  (hPutStrLn)
 import XMonad.Hooks.DynamicLog    (dynamicLogWithPP, PP(..))
@@ -26,7 +26,8 @@ import XMonad.Util.EZConfig       (additionalKeysP)
 
 main :: IO ()
 main = do
-    d <- spawnDzen defaultDzen { font = Just "Verdana-8" }
+    d <- spawnDzen defaultDzenXft { screen = Just 0 }
+    spawnToDzen "conky -c ~/.dzen_conkyrc" defaultDzenXft { screen = Just 1 }
     xmonad $ withUrgencyHookC pbUrgencyHook pbUrgencyConfig $ defaultConfig
         { terminal    = "urxvtc"
         , workspaces  = pbWorkspaces
@@ -45,6 +46,7 @@ myManageHook = composeAll [ matchAny v --> a | (v,a) <- myActions ] <+> manageSc
                       , ("Uzbl"      , doShift "2-web" )
                       , ("Uzbl-core" , doShift "2-web" )
                       , ("Chromium"  , doShift "2-web" )
+                      , ("Firefox"   , doShift "2-web" )
                       , ("irssi"     , doShift "3-chat")
                       ]
 
