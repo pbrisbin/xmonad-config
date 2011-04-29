@@ -84,17 +84,17 @@ import Graphics.X11.Xinerama (xineramaQueryScreens, xsi_width)
 --   option to the @dzen2@ executable. @exec@ and @addargs@ can be 
 --   empty for the same purpose.
 data DzenConf = DzenConf 
-    { x_position :: Maybe DzenWidth -- ^ x position
-    , y_position :: Maybe Int       -- ^ y position
-    , screen     :: Maybe ScreenNum -- ^ screen number (0 based, Nothing implies 0)
-    , width      :: Maybe DzenWidth -- ^ width
-    , height     :: Maybe Int       -- ^ line height
-    , alignment  :: Maybe TextAlign -- ^ alignment of title window
-    , font       :: Maybe String    -- ^ font
-    , fg_color   :: Maybe String    -- ^ foreground color
-    , bg_color   :: Maybe String    -- ^ background color
-    , exec       :: [String]        -- ^ exec flags, ex: [\"onstart=lower\", ...]
-    , addargs    :: [String]        -- ^ additional arguments, ex: [\"-p\", \"-tw\", \"5\"]
+    { xPosition :: Maybe DzenWidth -- ^ x position
+    , yPosition :: Maybe Int       -- ^ y position
+    , screen    :: Maybe ScreenNum -- ^ screen number (0 based, Nothing implies 0)
+    , width     :: Maybe DzenWidth -- ^ width
+    , height    :: Maybe Int       -- ^ line height
+    , alignment :: Maybe TextAlign -- ^ alignment of title window
+    , font      :: Maybe String    -- ^ font
+    , fgColor   :: Maybe String    -- ^ foreground color
+    , bgColor   :: Maybe String    -- ^ background color
+    , exec      :: [String]        -- ^ exec flags, ex: [\"onstart=lower\", ...]
+    , addargs   :: [String]        -- ^ additional arguments, ex: [\"-p\", \"-tw\", \"5\"]
     }
 
 -- | Xinerama screen number
@@ -160,20 +160,20 @@ dzen d = return . unwords . (:) "dzen2" =<< dzenArgs d
 -- | The computed list of arguments for a 'DzenConf'
 dzenArgs :: DzenConf -> IO [String]
 dzenArgs d = do
-    x <- mkWidth (screen d) (x_position d)
+    x <- mkWidth (screen d) (xPosition d)
     w <- mkWidth (screen d) (width d)
 
     let s = fmap (+1) $ screen d -- the -xs arg is 1 index
 
-    return $ addOpt ("-fn", fmap quote $ font       d)
-          ++ addOpt ("-fg", fmap quote $ fg_color   d)
-          ++ addOpt ("-bg", fmap quote $ bg_color   d)
-          ++ addOpt ("-ta", fmap show  $ alignment  d)
-          ++ addOpt ("-y" , fmap show  $ y_position d)
-          ++ addOpt ("-h" , fmap show  $ height     d)
-          ++ addOpt ("-xs", fmap show s              )
-          ++ addOpt ("-x" , fmap show x              )
-          ++ addOpt ("-w" , fmap show w              )
+    return $ addOpt ("-fn", fmap quote $ font      d)
+          ++ addOpt ("-fg", fmap quote $ fgColor   d)
+          ++ addOpt ("-bg", fmap quote $ bgColor   d)
+          ++ addOpt ("-ta", fmap show  $ alignment d)
+          ++ addOpt ("-y" , fmap show  $ yPosition d)
+          ++ addOpt ("-h" , fmap show  $ height    d)
+          ++ addOpt ("-xs", fmap show s             )
+          ++ addOpt ("-x" , fmap show x             )
+          ++ addOpt ("-w" , fmap show w             )
           ++ addExec (exec d)
           ++ addargs d
 
@@ -199,7 +199,7 @@ screenWidth s = do
             then fromIntegral . xsi_width $ ss !! s else 0
 
 -- | Given a 'DzenWidth', give back the Maybe Int that can be used as an 
---   argument for dzen2 -w or -x.
+--   argument for @-w@ or @-x@.
 mkWidth :: Maybe ScreenNum -> Maybe DzenWidth -> IO (Maybe Int)
 mkWidth Nothing w                   = mkWidth (Just 0) w
 mkWidth _       Nothing             = return Nothing
@@ -214,12 +214,12 @@ mkWidth (Just s) (Just (Percent c)) = return . go =<< screenWidth s
 --   \'onstart=lower\'@ are useful for dzen-as-statusbar.
 defaultDzen :: DzenConf
 defaultDzen = nothingDzen
-    { alignment   = Just LeftAlign
-    , font        = Just "-misc-fixed-*-*-*-*-10-*-*-*-*-*-*-*"
-    , fg_color    = Just "#FFFFFF"
-    , bg_color    = Just "#333333"
-    , exec        = ["onstart=lower"]
-    , addargs     = ["-p"]
+    { alignment = Just LeftAlign
+    , font      = Just "-misc-fixed-*-*-*-*-10-*-*-*-*-*-*-*"
+    , fgColor   = Just "#FFFFFF"
+    , bgColor   = Just "#333333"
+    , exec      = ["onstart=lower"]
+    , addargs   = ["-p"]
     }
 
 -- | Same thing but with an XFT font (Verdana)
@@ -229,15 +229,15 @@ defaultDzenXft = defaultDzen { font = Just "Verdana-8" }
 -- | A dzen with all options as 'Nothing' or the empty list.
 nothingDzen :: DzenConf
 nothingDzen = DzenConf
-    { x_position = Nothing
-    , y_position = Nothing
-    , screen     = Nothing
-    , width      = Nothing
-    , height     = Nothing
-    , alignment  = Nothing
-    , font       = Nothing
-    , fg_color   = Nothing
-    , bg_color   = Nothing
-    , exec       = []
-    , addargs    = []
+    { xPosition = Nothing
+    , yPosition = Nothing
+    , screen    = Nothing
+    , width     = Nothing
+    , height    = Nothing
+    , alignment = Nothing
+    , font      = Nothing
+    , fgColor   = Nothing
+    , bgColor   = Nothing
+    , exec      = []
+    , addargs   = []
     }
