@@ -14,9 +14,11 @@
 
 import XMonad
 
-import Utils -- <http://pbrisbin.com/xmonad/docs/Utils.html>
+-- <http://pbrisbin.com/xmonad/docs/Utils.html>
+import Utils
+import Dzen (DzenConf(..), TextAlign(..), defaultDzenXft,
+                spawnDzen, spawnToDzen)
 
-import Dzen                       (DzenConf(screen), spawnDzen, spawnToDzen, defaultDzenXft)
 import ScratchPadKeys             (scratchPadList, manageScratchPads, scratchPadKeys)
 import System.IO                  (hPutStrLn)
 import XMonad.Hooks.DynamicLog    (dynamicLogWithPP, PP(..))
@@ -27,7 +29,7 @@ import XMonad.Util.EZConfig       (additionalKeysP)
 main :: IO ()
 main = do
     d <- spawnDzen defaultDzenXft { screen = Just 0 }
-    spawnToDzen "conky -c ~/.dzen_conkyrc" defaultDzenXft { screen = Just 1 }
+    spawnToDzen "conky -c ~/.dzen_conkyrc" conkyBar
     xmonad $ withUrgencyHookC pbUrgencyHook pbUrgencyConfig $ defaultConfig
         { terminal    = "urxvtc"
         , workspaces  = pbWorkspaces
@@ -36,6 +38,14 @@ main = do
         , logHook     = dynamicLogWithPP $ pbPP { ppOutput = hPutStrLn d }
         , startupHook = spawn "conky"
         } `additionalKeysP` myKeys
+
+    where
+        conkyBar :: DzenConf
+        conkyBar = defaultDzenXft
+            { screen    = Just 1
+            , alignment = Just RightAlign
+            , fgColor   = Just "#606060"
+            }
 
 myManageHook :: ManageHook
 myManageHook = composeAll [ matchAny v --> a | (v,a) <- myActions ] <+> manageScratchPads scratchPadList
