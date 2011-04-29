@@ -33,6 +33,7 @@ module Dzen (
     , dzenArgs
     -- * Example Dzens
     , defaultDzen
+    , defaultDzenXft
     , nothingDzen
     ) where
 
@@ -220,6 +221,10 @@ defaultDzen = nothingDzen
     , exec        = ["onstart=lower"]
     , addargs     = ["-p"]
     }
+
+-- | Same thing but with an XFT font (Verdana)
+defaultDzenXft :: DzenConf
+defaultDzenXft = defaultDzen { font = Just "Verdana-8" }
 
 -- | A dzen with all options as 'Nothing' or the empty list.
 nothingDzen :: DzenConf
