@@ -32,6 +32,7 @@ main = do
     spawnToDzen "conky -c ~/.conky/dzen" conkyBar
     xmonad $ withUrgencyHookC pbUrgencyHook pbUrgencyConfig $ defaultConfig
         { terminal    = "urxvtc"
+        , modMask     = mod4Mask
         , workspaces  = pbWorkspaces
         , layoutHook  = pbLayout
         , manageHook  = pbManageHook <+> myManageHook
@@ -62,15 +63,15 @@ myManageHook = composeAll [ matchAny v --> a | (v,a) <- myActions ] <+> manageSc
 
 myKeys :: [(String, X())]
 myKeys = [ ("M-p"                   , yeganesh                ) -- dmenu app launcher
-         , ("M4-b"                  , spawn "$BROWSER"        ) -- open web client
-         , ("M4-l"                  , spawn "slock"           ) -- lock screen
-         , ("M4-a"                  , spawn "msearch all"     ) -- search current playlist via dmenu
-         , ("M4-g"                  , spawn "goodsong"        ) -- note current song as 'good'
-         , ("M4-S-g"                , spawn "goodsong -p"     ) -- play a random 'good' song
+         , ("M1-b"                  , spawn "$BROWSER"        ) -- open web client
+         , ("M1-l"                  , spawn "slock"           ) -- lock screen
+         , ("M1-a"                  , spawn "msearch all"     ) -- search current playlist via dmenu
+         , ("M1-g"                  , spawn "goodsong"        ) -- note current song as 'good'
+         , ("M1-S-g"                , spawn "goodsong -p"     ) -- play a random 'good' song
          , ("<XF86AudioMute>"       , spawn "ossvol -t"       ) -- toggle mute
          , ("<XF86AudioLowerVolume>", spawn "ossvol -d 1"     ) -- volume down
          , ("<XF86AudioRaiseVolume>", spawn "ossvol -i 1"     ) -- volume up
-         , ("M4-i"                  , spawnInScreen "irssi"   ) -- open/attach IRC client in screen
-         , ("M4-r"                  , spawnInScreen "rtorrent") -- open/attach rtorrent in screen
+         , ("M1-i"                  , spawnInScreen "irssi"   ) -- open/attach IRC client in screen
+         , ("M1-r"                  , spawnInScreen "rtorrent") -- open/attach rtorrent in screen
          , ("M-q"                   , cleanStart              ) -- restart xmonad
          ] ++ scratchPadKeys scratchPadList

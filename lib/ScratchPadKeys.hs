@@ -135,7 +135,7 @@ scratchPadList = [scratchMixer, scratchMail, scratchMusic, scratchTop, scratchTe
 -- | A terminal along the bottom edge
 scratchTerminal :: ScratchPad
 scratchTerminal = ScratchPad
-    { keybind  = "M4-t"
+    { keybind  = "M1-t"
     , cmd      = runInTerminal ["-name", "sp-term"]
     , query    = resource =? "sp-term"
     , hook     = bottomEdge 0.15
@@ -144,7 +144,7 @@ scratchTerminal = ScratchPad
 -- | ossxmix center screen
 scratchMixer :: ScratchPad
 scratchMixer = ScratchPad
-    { keybind  = "M4-x"
+    { keybind  = "M1-x"
     , cmd      = spawn "ossxmix"
     , query    = className =? "Ossxmix"
     , hook     = centerScreen 0.65
@@ -152,15 +152,15 @@ scratchMixer = ScratchPad
 
 -- | mutt center screen
 scratchMail :: ScratchPad
-scratchMail = mkTermSP "mutt" "M4" $ centerScreen 0.65
+scratchMail = mkTermSP "mutt" "M1" $ centerScreen 0.65
 
 -- | ncmpcpp center screen
 scratchMusic :: ScratchPad
-scratchMusic = mkTermSP "ncmpcpp" "M4" $ centerScreen 0.65
+scratchMusic = mkTermSP "ncmpcpp" "M1" $ centerScreen 0.65
 
 -- | htop center screen
 scratchTop :: ScratchPad
-scratchTop = mkTermSP "htop" "M4" $ centerScreen 0.65
+scratchTop = mkTermSP "htop" "M1" $ centerScreen 0.65
 
 -- | Makes an in-term scratchpad given executable, modifier, and hook. 
 --   Uses modifier and the first letter of the executable as the 
