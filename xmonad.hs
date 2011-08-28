@@ -65,7 +65,7 @@ myKeys :: [(String, X())]
 myKeys = [ ("M-p"                   , yeganesh                ) -- dmenu app launcher
          , ("M1-b"                  , spawn "$BROWSER"        ) -- open web client
          , ("M1-l"                  , spawn "slock"           ) -- lock screen
-         , ("M1-a"                  , spawn "msearch all"     ) -- search current playlist via dmenu
+         , ("M1-s"                  , spawn "msearch all"     ) -- search current playlist via dmenu
          , ("M1-g"                  , spawn "goodsong"        ) -- note current song as 'good'
          , ("M1-S-g"                , spawn "goodsong -p"     ) -- play a random 'good' song
          , ("<XF86AudioMute>"       , spawn "ossvol -t"       ) -- toggle mute
