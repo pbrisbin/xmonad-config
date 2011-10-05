@@ -40,6 +40,7 @@ module Dzen (
 import Data.List (intercalate)
 import System.IO
 import System.Posix.IO
+import System.Posix.Types (Fd)
 import System.Posix.Process (executeFile, forkProcess, createSession)
 
 import Graphics.X11.Xlib     (openDisplay)
@@ -111,46 +112,53 @@ instance Show TextAlign where
     show RightAlign = "r"
     show Centered   = "c"
 
--- | Spawn a dzen by configuraion and return its handle, behaves 
+-- | Spawn a dzen by configuration and return its handle, behaves 
 --   exactly as spawnPipe but takes a 'DzenConf' as argument.
 spawnDzen :: DzenConf -> IO Handle
 spawnDzen d = do
     (rd, wr) <- createPipe
-    setFdOption wr CloseOnExec True
-    h <- fdToHandle wr
-    hSetBuffering h LineBuffering
-    _ <- forkProcess $ do
-        _  <- createSession
-        _  <- dupTo rd stdInput
-        dz <- dzen d
-        executeFile "/bin/sh" False ["-c", dz] Nothing
+    h <- setupDescriptor wr
+
+    readFrom rd $ shellOut =<< dzen d
     return h
 
 -- | Spawn a process sending its stdout to the stdin of the dzen
 spawnToDzen :: String -> DzenConf -> IO ()
 spawnToDzen x d = do
     (rd, wr) <- createPipe
-    setFdOption rd CloseOnExec True
-    setFdOption wr CloseOnExec True
-    hin  <- fdToHandle rd
-    hout <- fdToHandle wr
-    hSetBuffering hin  LineBuffering
-    hSetBuffering hout LineBuffering
 
-    -- the dzen
-    _ <- forkProcess $ do
-        _  <- createSession
-        _  <- dupTo rd stdInput
-        dz <- dzen d
-        executeFile "/bin/sh" False ["-c", dz] Nothing
+    mapM_ setupDescriptor [rd, wr]
 
-    -- the input process
-    _ <- forkProcess $ do
-        _ <- createSession
-        _ <- dupTo wr stdOutput
-        executeFile "/bin/sh" False ["-c", x] Nothing
+    readFrom rd $ shellOut =<< dzen d
+    writeTo  wr $ shellOut x
 
     return ()
+
+setupDescriptor :: Fd -> IO Handle
+setupDescriptor fd = do
+    setFdOption fd CloseOnExec True
+    h <- fdToHandle fd
+    hSetBuffering h LineBuffering
+    return h
+
+readFrom :: Fd -> IO () -> IO ()
+readFrom rd f = tieProcess rd stdInput f
+
+writeTo :: Fd -> IO () -> IO ()
+writeTo wr f = tieProcess wr stdOutput f
+
+tieProcess :: Fd -> Fd -> IO () -> IO ()
+tieProcess fd1 fd2 f = do
+    _ <- forkProcess $ do
+        _  <- createSession
+        _  <- dupTo fd1 fd2
+
+        f
+
+    return ()
+
+shellOut :: String -> IO ()
+shellOut cmd = executeFile "/bin/sh" False ["-c", cmd] Nothing
 
 -- | The full computed dzen command for a 'DzenConf'
 dzen :: DzenConf -> IO String
