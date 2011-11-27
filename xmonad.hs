@@ -14,7 +14,7 @@
 
 import XMonad
 
--- <http://pbrisbin.com/xmonad/docs/Utils.html>
+-- <http://pbrisbin.com/static/docs/haskell/xmonad-config/Utils.html>
 import Utils
 import Dzen (DzenConf(..), TextAlign(..), defaultDzenXft,
                 spawnDzen, spawnToDzen)
