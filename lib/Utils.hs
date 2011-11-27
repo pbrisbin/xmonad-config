@@ -15,7 +15,7 @@
 -- This could be imported and used on its own without having to use \"my\" 
 -- config entirely.
 --
--- haddocks: <http://pbrisbin.com/xmonad/docs/Utils.html>
+-- haddocks: <http://pbrisbin.com/static/docs/haskell/xmonad-config/Utils.html>
 --
 -------------------------------------------------------------------------------
 
@@ -138,7 +138,7 @@ runInTerminal args = asks config >>= \(XConfig { terminal = t }) -> spawn $ unwo
 
 -- | Spawn in accordance with <http://pbrisbin.com/posts/screen_tricks>.
 spawnInScreen :: String -> X ()
-spawnInScreen c = runInTerminal [ "-title", c, "-e bash -cl", "\"SCREEN_CONF=" ++ c, "screen -S", c, "-R -D", c ++ "\"" ]
+spawnInScreen c = runInTerminal [ "-title", c, "-e bash -ci", "\"SCREEN_CONF=" ++ c, "screen -S", c, "-R -D", c ++ "\"" ]
 
 -- | Kill (@-9@) any running dzen and conky processes before executing 
 --   the default restart command, this is a good @M-q@ replacement.
