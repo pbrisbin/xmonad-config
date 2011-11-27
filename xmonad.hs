@@ -63,6 +63,7 @@ myManageHook = composeAll [ matchAny v --> a | (v,a) <- myActions ] <+> manageSc
 
 myKeys :: [(String, X())]
 myKeys = [ ("M-p"                   , yeganesh                ) -- dmenu app launcher
+         , ("M-a"                   , spawn "albumbler"       ) -- music-choosing script
          , ("M1-b"                  , spawn "$BROWSER"        ) -- open web client
          , ("M1-l"                  , spawn "slock"           ) -- lock screen
          , ("M1-s"                  , spawn "msearch all"     ) -- search current playlist via dmenu
