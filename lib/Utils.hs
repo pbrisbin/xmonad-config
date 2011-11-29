@@ -114,7 +114,7 @@ instance UrgencyHook SpawnSomething where
 
 -- | Ding! on urgent via ossplay and a sound from Gajim.
 pbUrgencyHook :: SpawnSomething
-pbUrgencyHook = SpawnSomething "ossplay -q /usr/share/gajim/data/sounds/message2.wav"
+pbUrgencyHook = SpawnSomething "ossplay -q ~/.xmonad/data/sounds/message2.wav"
 
 -- | Default but still show urgent on visible non-focused workspace.
 --
