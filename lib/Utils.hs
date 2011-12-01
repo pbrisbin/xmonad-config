@@ -92,6 +92,7 @@ pbLayout = avoidStruts . layoutHints $ layoutHook defaultConfig
 pbPP :: PP
 pbPP = dzenPP
     { ppHidden = hideNSP
+    , ppUrgent = ppUrgent dzenPP . hideNSP
     , ppSort   = getSortByXineramaRule
     , ppTitle  = dzenColor "#909090" "" . pad
     , ppLayout = dzenColor "#909090" "" . pad . \s ->
