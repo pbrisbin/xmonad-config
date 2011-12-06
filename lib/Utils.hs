@@ -128,7 +128,7 @@ pbUrgencyConfig = urgencyConfig { suppressWhen = OnScreen }
 --   variable @$DMENU_OPTIONS@ to customize dmenu appearance, this is a 
 --   good @M-p@ replacement.
 yeganesh :: MonadIO m => m ()
-yeganesh = spawn "exe=`yeganesh -x -- $DMENU_OPTIONS </dev/null` && eval \"exec $exe\""
+yeganesh = spawn "exe=`yeganesh -x -- $DMENU_OPTIONS` && eval \"exec $exe\""
 
 -- | Execute a command in the user-configured terminal.
 --
