@@ -116,21 +116,24 @@ instance Show TextAlign where
 --   exactly as spawnPipe but takes a 'DzenConf' as argument.
 spawnDzen :: DzenConf -> IO Handle
 spawnDzen d = do
+    cmd      <- dzen d
     (rd, wr) <- createPipe
-    h <- setupDescriptor wr
+    h        <- setupDescriptor wr
 
-    readFrom rd $ shellOut =<< dzen d
+    shellOut cmd `readingFrom` rd
+
     return h
 
 -- | Spawn a process sending its stdout to the stdin of the dzen
 spawnToDzen :: String -> DzenConf -> IO ()
 spawnToDzen x d = do
+    cmd      <- dzen d
     (rd, wr) <- createPipe
 
     mapM_ setupDescriptor [rd, wr]
 
-    readFrom rd $ shellOut =<< dzen d
-    writeTo  wr $ shellOut x
+    shellOut cmd `readingFrom` rd
+    shellOut x   `writingTo`   wr
 
     return ()
 
@@ -141,11 +144,11 @@ setupDescriptor fd = do
     hSetBuffering h LineBuffering
     return h
 
-readFrom :: Fd -> IO () -> IO ()
-readFrom rd f = tieProcess rd stdInput f
+readingFrom :: IO () -> Fd -> IO ()
+readingFrom f rd = tieProcess rd stdInput f
 
-writeTo :: Fd -> IO () -> IO ()
-writeTo wr f = tieProcess wr stdOutput f
+writingTo :: IO () -> Fd -> IO ()
+writingTo f wr = tieProcess wr stdOutput f
 
 tieProcess :: Fd -> Fd -> IO () -> IO ()
 tieProcess fd1 fd2 f = do
