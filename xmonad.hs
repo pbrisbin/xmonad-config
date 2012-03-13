@@ -29,7 +29,7 @@ import XMonad.Util.EZConfig       (additionalKeysP)
 main :: IO ()
 main = do
     d <- spawnDzen defaultDzenXft { screen = Just 0 }
-    spawnToDzen "conky -c ~/.conky/dzen" conkyBar
+    spawnToDzen "conky -c ~/.xmonad/data/conky/dzen" conkyBar
     xmonad $ withUrgencyHookC pbUrgencyHook pbUrgencyConfig $ defaultConfig
         { terminal    = "urxvtc"
         , modMask     = mod4Mask
@@ -37,7 +37,7 @@ main = do
         , layoutHook  = pbLayout
         , manageHook  = pbManageHook <+> myManageHook
         , logHook     = dynamicLogWithPP $ pbPP { ppOutput = hPutStrLn d }
-        , startupHook = spawn "conky -c ~/.conky/conkyrc"
+        , startupHook = spawn "conky -c ~/.xmonad/data/conky/main"
         } `additionalKeysP` myKeys
 
     where
