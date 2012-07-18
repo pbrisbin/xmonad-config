@@ -8,14 +8,17 @@
 -------------------------------------------------------------------------------
 import XMonad
 
-import XMonad.Hooks.DynamicLog      (PP(..), dynamicLogWithPP, dzenColor, dzenPP, pad)
-import XMonad.Hooks.ManageDocks     (manageDocks, avoidStruts)
-import XMonad.Hooks.ManageHelpers   (isDialog, isFullscreen, doFullFloat, doCenterFloat)
-import XMonad.Hooks.UrgencyHook     (NoUrgencyHook(..), withUrgencyHook)
-import XMonad.Layout.LayoutHints    (layoutHints)
-import XMonad.Util.EZConfig         (additionalKeysP)
-import XMonad.Util.Run              (spawnPipe, hPutStrLn)
-import XMonad.Util.WorkspaceCompare (getSortByXineramaRule)
+import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.ManageHelpers
+import XMonad.Hooks.UrgencyHook
+import XMonad.Layout.LayoutHints
+import XMonad.Util.EZConfig
+import XMonad.Util.Run
+import XMonad.Util.NamedScratchpad
+import XMonad.Util.WorkspaceCompare
+
+import qualified XMonad.StackSet as W
 
 main :: IO ()
 main = do
@@ -32,6 +35,7 @@ main = do
                         <+> composeAll
                             [ isDialog     --> doCenterFloat
                             , isFullscreen --> doFullFloat
+                            , namedScratchpadManageHook scratchpads
                             ]
 
         , logHook = dynamicLogWithPP $ dzenPP
@@ -53,9 +57,26 @@ main = do
             , ("<XF86AudioRaiseVolume>", spawn "ossvol -i 1")
             , ("M-p"                   , yeganesh           )
             , ("M-q"                   , restart            )
+            , ("M1-x"                  , namedScratchpadAction scratchpads "ossxmix")
+            , ("M1-m"                  , namedScratchpadAction scratchpads "mail"   )
+            , ("M1-h"                  , namedScratchpadAction scratchpads "htop"   )
             ]
 
     where
+        scratchpads :: [NamedScratchpad]
+        scratchpads =
+            [ NS { name  = "ossxmix"
+                 , cmd   = "ossxmix"
+                 , query = className =? "Ossxmix"
+                 , hook  = customFloating $ W.RationalRect (1/20) (1/10) (1/2) (1/2)
+                 }
+            , NS { name  = "mail"
+                 , cmd   = "urxvtc -name sp-mail -e mutt"
+                 , query = resource =? "sp-mail"
+                 , hook  = customFloating $ W.RationalRect (1/10) (1/5) (1/2) (1/2)
+                 }
+            ]
+
         hideNSP :: WorkspaceId -> String
         hideNSP ws = if ws /= "NSP" then pad ws else ""
 
