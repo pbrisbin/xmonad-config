@@ -3,7 +3,7 @@
 --
 -- xmonad.hs, pbrisbin 2012
 --
--- http://github.com/pbrisbin/xmonad-config/
+-- <https://github.com/pbrisbin/xmonad-config>
 --
 -------------------------------------------------------------------------------
 import XMonad
@@ -22,10 +22,10 @@ main = do
     d <- spawnPipe "dzen2 -p -xs 1 -ta l -fn Verdana-8 -e 'onstart=lower'"
 
     xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig
-        { terminal = "urxvtc"
-        , modMask  = mod4Mask
-
-        , layoutHook = avoidStruts . layoutHints $ layoutHook defaultConfig
+        { terminal   = "urxvtc"
+        , modMask    = mod4Mask
+        , layoutHook = avoidStruts . layoutHints
+                     $ layoutHook defaultConfig
 
         , manageHook = manageHook defaultConfig
                         <+> manageDocks
@@ -45,8 +45,9 @@ main = do
         , startupHook = do
             spawn "conky -c ~/.xmonad/data/conky/main"
             spawn "conky -c ~/.xmonad/data/conky/dzen | dzen2 -p -xs 2 -ta r -fn Verdana-8 -e 'onstart=lower'"
+        }
 
-        } `additionalKeysP`
+        `additionalKeysP`
             [ ("<XF86AudioMute>"       , spawn "ossvol -t"  )
             , ("<XF86AudioLowerVolume>", spawn "ossvol -d 1")
             , ("<XF86AudioRaiseVolume>", spawn "ossvol -i 1")
