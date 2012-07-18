@@ -1,78 +1,67 @@
 -------------------------------------------------------------------------------
 -- |
--- Module      :  xmonad.hs
--- Copyright   :  (c) Patrick Brisbin 2010
--- License     :  as-is
 --
--- Maintainer  :  pbrisbin@gmail.com
--- Stability   :  unstable
--- Portability :  unportable
+-- xmonad.hs, pbrisbin 2012
 --
 -- http://github.com/pbrisbin/xmonad-config/
 --
 -------------------------------------------------------------------------------
-
 import XMonad
 
--- <http://pbrisbin.com/static/docs/haskell/xmonad-config/Utils.html>
-import Utils
-import Dzen (DzenConf(..), TextAlign(..), defaultDzenXft,
-                spawnDzen, spawnToDzen)
-
-import ScratchPadKeys             (scratchPadList, manageScratchPads, scratchPadKeys)
-import System.IO                  (hPutStrLn)
-import XMonad.Hooks.DynamicLog    (dynamicLogWithPP, PP(..))
-import XMonad.Hooks.ManageHelpers (doCenterFloat)
-import XMonad.Hooks.UrgencyHook   (withUrgencyHookC)
-import XMonad.Util.EZConfig       (additionalKeysP)
+import XMonad.Hooks.DynamicLog      (PP(..), dynamicLogWithPP, dzenColor, dzenPP, pad)
+import XMonad.Hooks.ManageDocks     (manageDocks, avoidStruts)
+import XMonad.Hooks.ManageHelpers   (isDialog, isFullscreen, doFullFloat, doCenterFloat)
+import XMonad.Hooks.UrgencyHook     (NoUrgencyHook(..), withUrgencyHook)
+import XMonad.Layout.LayoutHints    (layoutHints)
+import XMonad.Util.EZConfig         (additionalKeysP)
+import XMonad.Util.Run              (spawnPipe, hPutStrLn)
+import XMonad.Util.WorkspaceCompare (getSortByXineramaRule)
 
 main :: IO ()
 main = do
-    d <- spawnDzen defaultDzenXft { screen = Just 0 }
-    spawnToDzen "conky -c ~/.xmonad/data/conky/dzen" conkyBar
-    xmonad $ withUrgencyHookC pbUrgencyHook pbUrgencyConfig $ defaultConfig
-        { terminal    = "urxvtc"
-        , modMask     = mod4Mask
-        , workspaces  = pbWorkspaces
-        , layoutHook  = pbLayout
-        , manageHook  = pbManageHook <+> myManageHook
-        , logHook     = dynamicLogWithPP $ pbPP { ppOutput = hPutStrLn d }
-        , startupHook = spawn "conky -c ~/.xmonad/data/conky/main"
-        } `additionalKeysP` myKeys
+    d <- spawnPipe "dzen2 -p -xs 1 -ta l -fn Verdana-8 -e 'onstart=lower'"
+
+    xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig
+        { terminal = "urxvtc"
+        , modMask  = mod4Mask
+
+        , layoutHook = avoidStruts . layoutHints $ layoutHook defaultConfig
+
+        , manageHook = manageHook defaultConfig
+                        <+> manageDocks
+                        <+> composeAll
+                            [ isDialog     --> doCenterFloat
+                            , isFullscreen --> doFullFloat
+                            ]
+
+        , logHook = dynamicLogWithPP $ dzenPP
+                        { ppOutput = hPutStrLn d
+                        , ppSort   = getSortByXineramaRule
+                        , ppHidden = hideNSP
+                        , ppTitle  = pad . dzenColor "#bbb" ""
+                        , ppLayout = const ""
+                        }
+
+        , startupHook = do
+            spawn "conky -c ~/.xmonad/data/conky/main"
+            spawn "conky -c ~/.xmonad/data/conky/dzen | dzen2 -p -xs 2 -ta r -fn Verdana-8 -e 'onstart=lower'"
+
+        } `additionalKeysP`
+            [ ("<XF86AudioMute>"       , spawn "ossvol -t"  )
+            , ("<XF86AudioLowerVolume>", spawn "ossvol -d 1")
+            , ("<XF86AudioRaiseVolume>", spawn "ossvol -i 1")
+            , ("M-p"                   , yeganesh           )
+            , ("M-q"                   , restart            )
+            ]
 
     where
-        conkyBar :: DzenConf
-        conkyBar = defaultDzenXft
-            { screen    = Just 1
-            , alignment = Just RightAlign
-            , fgColor   = Just "#606060"
-            }
+        hideNSP :: WorkspaceId -> String
+        hideNSP ws = if ws /= "NSP" then pad ws else ""
 
-myManageHook :: ManageHook
-myManageHook = composeAll [ matchAny v --> a | (v,a) <- myActions ] <+> manageScratchPads scratchPadList
+        yeganesh :: MonadIO m => m ()
+        yeganesh = spawn "x=$(yeganesh -x -- $DMENU_OPTIONS) && $x &"
 
-    where myActions = [ ("rdesktop"  , doFloat         )
-                      , ("Xmessage"  , doCenterFloat   )
-                      , ("Gmrun"     , doCenterFloat   )
-                      , ("Uzbl"      , doShift "2-web" )
-                      , ("Uzbl-core" , doShift "2-web" )
-                      , ("Chromium"  , doShift "2-web" )
-                      , ("Firefox"   , doShift "2-web" )
-                      , ("irssi"     , doShift "3-chat")
-                      ]
-
-myKeys :: [(String, X())]
-myKeys = [ ("M-p"                   , yeganesh                ) -- dmenu app launcher
-         , ("M-a"                   , spawn "albumbler"       ) -- music-choosing script
-         , ("M1-b"                  , spawn "$BROWSER"        ) -- open web client
-         , ("M1-l"                  , spawn "slock"           ) -- lock screen
-         , ("M1-s"                  , spawn "msearch all"     ) -- search current playlist via dmenu
-         , ("M1-g"                  , spawn "goodsong"        ) -- note current song as 'good'
-         , ("M1-S-g"                , spawn "goodsong -p"     ) -- play a random 'good' song
-         , ("<XF86AudioMute>"       , spawn "ossvol -t"       ) -- toggle mute
-         , ("<XF86AudioLowerVolume>", spawn "ossvol -d 1"     ) -- volume down
-         , ("<XF86AudioRaiseVolume>", spawn "ossvol -i 1"     ) -- volume up
-         , ("M1-i"                  , spawnInScreen "irssi"   ) -- open/attach IRC client in screen
-         , ("M1-r"                  , spawnInScreen "rtorrent") -- open/attach rtorrent in screen
-         , ("M-q"                   , cleanStart              ) -- restart xmonad
-         ] ++ scratchPadKeys scratchPadList
+        restart :: MonadIO m => m ()
+        restart = spawn $  "for pid in `pgrep conky`; do kill -9 $pid; done && "
+                        ++ "for pid in `pgrep dzen2`; do kill -9 $pid; done && "
+                        ++ "xmonad --recompile && xmonad --restart"
