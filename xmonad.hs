@@ -59,7 +59,6 @@ main = do
             , ("M-q"                   , restart            )
             , ("M1-x"                  , namedScratchpadAction scratchpads "ossxmix")
             , ("M1-m"                  , namedScratchpadAction scratchpads "mail"   )
-            , ("M1-h"                  , namedScratchpadAction scratchpads "htop"   )
             ]
 
     where
