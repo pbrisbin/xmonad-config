@@ -11,6 +11,7 @@ Such as:
 -   Dual monitor status bars (requires dzen2 with xinerama patch)
 -   Volume keys (requires my ossvol script)
 -   Yeganesh as app launcher
+-   Ossxmix and Mutt scratchpads
 
 ### Try it
 
