@@ -42,6 +42,7 @@ main = do
                         { ppOutput = hPutStrLn d
                         , ppSort   = getSortByXineramaRule
                         , ppHidden = hideNSP
+                        , ppUrgent = ppUrgent dzenPP . hideNSP
                         , ppTitle  = pad . dzenColor "#bbb" ""
                         , ppLayout = const ""
                         }
