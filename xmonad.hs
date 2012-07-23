@@ -81,7 +81,7 @@ main = do
         hideNSP ws = if ws /= "NSP" then pad ws else ""
 
         yeganesh :: MonadIO m => m ()
-        yeganesh = spawn "x=$(yeganesh -x -- $DMENU_OPTIONS) && $x &"
+        yeganesh = spawn "x=$(yeganesh -x -- $DMENU_OPTIONS) && exec $x"
 
         restart :: MonadIO m => m ()
         restart = spawn $  "for pid in `pgrep conky`; do kill -9 $pid; done && "
