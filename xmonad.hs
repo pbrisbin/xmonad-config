@@ -28,7 +28,7 @@ main = do
                     , ppLayout = const ""
                     }
                 (\XConfig { modMask = m } -> (m, xK_b))
-                (defaultConfig
+                $ defaultConfig
                     { terminal   = "urxvtc"
                     , modMask    = mod4Mask
                     , manageHook = composeAll
@@ -51,9 +51,9 @@ main = do
                         , ("M-a"                   , spawn $  "for pid in `pgrep conky`; do kill -9 $pid; done && "
                                                            ++ "for pid in `pgrep dzen2`; do kill -9 $pid; done && "
                                                            ++ "xmonad --recompile && xmonad --restart")
-                        ])
+                        ]
 
-    xmonad $ withUrgencyHook NoUrgencyHook $ conf
+    xmonad $ withUrgencyHook NoUrgencyHook conf
 
     where
         scratchpads :: [NamedScratchpad]
