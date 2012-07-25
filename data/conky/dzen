@@ -1,8 +1,0 @@
-background no
-out_to_console yes
-out_to_x no
-update_interval 1
-total_run_times 0
-
-TEXT
-cpu ^fg(\#909090)${cpu}%^fg()  mem ^fg(\#909090)${memperc}%^fg()  net ^fg(\#909090)${downspeedf eth0} / ${upspeedf eth0}^fg()  ${time %a %b %d %H:%M}  
