@@ -7,68 +7,73 @@
 --
 -------------------------------------------------------------------------------
 import XMonad
-
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.UrgencyHook
 import XMonad.Util.EZConfig
 import XMonad.Util.NamedScratchpad
 import XMonad.Util.WorkspaceCompare
-
-import qualified XMonad.StackSet as W
+import XMonad.StackSet (RationalRect(..))
 
 main :: IO ()
 main = do
     conf <- statusBar "dzen2 -p -xs 1 -ta l -fn Verdana-8 -e 'onstart=lower'"
                 dzenPP
-                    { ppSort   = getSortByXineramaRule
-                    , ppHidden = hideNSP
-                    , ppUrgent = ppUrgent dzenPP . hideNSP
-                    , ppTitle  = pad . dzenColor "#bbb" ""
+                    { ppHidden = pad
+                    , ppTitle  = pad . dzenColor "#bbb" "" . dzenEscape
                     , ppLayout = const ""
+                    , ppSort   = do
+                        xsort <- getSortByXineramaRule
+                        return (xsort . namedScratchpadFilterOutWorkspace)
                     }
-                (\XConfig { modMask = m } -> (m, xK_b))
+                toggleStrutsKey
+                $ withScratchpads scratchpads
+                $ withUrgencyHook NoUrgencyHook
                 $ defaultConfig
                     { terminal   = "urxvtc"
                     , modMask    = mod4Mask
                     , manageHook = composeAll
-                                        [ isDialog     --> doCenterFloat
-                                        , isFullscreen --> doFullFloat
-                                        , namedScratchpadManageHook scratchpads
-                                        , manageHook defaultConfig
-                                        ]
-                    , startupHook = do
-                        spawn "conky -c ~/.xmonad/data/conky/main"
-                        spawn "conky -c ~/.xmonad/data/conky/dzen | dzen2 -p -xs 2 -ta r -fn Verdana-8 -e 'onstart=lower'"
+                        [ isFullscreen --> doFullFloat
+                        , manageHook defaultConfig
+                        ]
                     }
                     `additionalKeysP`
                         [ ("<XF86AudioMute>"       , spawn "ossvol -t"  )
                         , ("<XF86AudioLowerVolume>", spawn "ossvol -d 1")
                         , ("<XF86AudioRaiseVolume>", spawn "ossvol -i 1")
-                        , ("M1-x"                  , namedScratchpadAction scratchpads "ossxmix")
-                        , ("M1-m"                  , namedScratchpadAction scratchpads "mail"   )
                         , ("M-p"                   , spawn "x=$(yeganesh -x -- $DMENU_OPTIONS) && exec $x")
-                        , ("M-a"                   , spawn $  "for pid in `pgrep conky`; do kill -9 $pid; done && "
-                                                           ++ "for pid in `pgrep dzen2`; do kill -9 $pid; done && "
-                                                           ++ "xmonad --recompile && xmonad --restart")
+                        , ("M-q"                   , spawn "killall dzen2; xmonad --recompile && xmonad --restart")
                         ]
 
-    xmonad $ withUrgencyHook NoUrgencyHook conf
+    xmonad conf
+
+
+scratchpads :: [(String, NamedScratchpad)]
+scratchpads = [ ("M1-x", NS { name  = "ossxmix"
+                            , cmd   = "ossxmix"
+                            , query = className =? "Ossxmix"
+                            , hook  = customFloating $ RationalRect (1/20) (1/10) (1/2) (1/2)
+                            })
+              , ("M1-m", NS { name  = "mail"
+                            , cmd   = "urxvtc -name sp-mail -e mutt"
+                            , query = resource =? "sp-mail"
+                            , hook  = customFloating $ RationalRect (1/10) (1/5) (1/2) (1/2)
+                            })
+              ]
+
+
+withScratchpads :: [(String, NamedScratchpad)] -> XConfig l -> XConfig l
+withScratchpads sps conf@XConfig { manageHook = mHook } = conf
+    { manageHook = mHook <+> namedScratchpadManageHook list } `additionalKeysP` keys
 
     where
-        scratchpads :: [NamedScratchpad]
-        scratchpads =
-            [ NS { name  = "ossxmix"
-                 , cmd   = "ossxmix"
-                 , query = className =? "Ossxmix"
-                 , hook  = customFloating $ W.RationalRect (1/20) (1/10) (1/2) (1/2)
-                 }
-            , NS { name  = "mail"
-                 , cmd   = "urxvtc -name sp-mail -e mutt"
-                 , query = resource =? "sp-mail"
-                 , hook  = customFloating $ W.RationalRect (1/10) (1/5) (1/2) (1/2)
-                 }
-            ]
+        list :: [NamedScratchpad]
+        list = map snd sps
 
-        hideNSP :: WorkspaceId -> String
-        hideNSP ws = if ws /= "NSP" then pad ws else ""
+        keys :: [(String, X ())]
+        keys = map (\(k, sp) -> (k, namedScratchpadAction list (name sp))) sps
+
+
+-- | The unexported X.H.DynamicLog.toggleStrutsKey
+toggleStrutsKey :: XConfig l -> (KeyMask, KeySym)
+toggleStrutsKey XConfig { modMask = modm } = (modm, xK_b)
