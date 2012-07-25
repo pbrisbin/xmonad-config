@@ -14,6 +14,7 @@ import XMonad.Util.EZConfig
 import XMonad.Util.NamedScratchpad
 import XMonad.Util.WorkspaceCompare
 import XMonad.StackSet (RationalRect(..))
+import Control.Arrow ((***))
 
 main :: IO ()
 main = do
@@ -71,7 +72,7 @@ withScratchpads sps conf@XConfig { manageHook = mHook } = conf
         list = map snd sps
 
         keys :: [(String, X ())]
-        keys = map (\(k, sp) -> (k, namedScratchpadAction list (name sp))) sps
+        keys = map (id *** (namedScratchpadAction list . name)) sps
 
 
 -- | The unexported X.H.DynamicLog.toggleStrutsKey
