@@ -39,20 +39,17 @@ main = do
                         ]
                     }
                     `additionalKeysP`
-                        [ ("<XF86AudioMute>"       , spawn "ossvol -t"  )
-                        , ("<XF86AudioLowerVolume>", spawn "ossvol -d 1")
-                        , ("<XF86AudioRaiseVolume>", spawn "ossvol -i 1")
-                        , ("M-p"                   , spawn "x=$(yeganesh -x -- $DMENU_OPTIONS) && exec $x")
-                        , ("M-q"                   , spawn "killall dzen2; xmonad --recompile && xmonad --restart")
+                        [ ("M-p", spawn "x=$(yeganesh -x -- $DMENU_OPTIONS) && exec $x")
+                        , ("M-q", spawn "killall dzen2; xmonad --recompile && xmonad --restart")
                         ]
 
     xmonad conf
 
 
 scratchpads :: [(String, NamedScratchpad)]
-scratchpads = [ ("M1-x", NS { name  = "ossxmix"
-                            , cmd   = "ossxmix"
-                            , query = className =? "Ossxmix"
+scratchpads = [ ("M1-x", NS { name  = "alsamixer"
+                            , cmd   = "urxvtc -name sp-alsamixer -e alsamixer"
+                            , query = resource =? "sp-alsamixer"
                             , hook  = customFloating $ RationalRect (1/20) (1/10) (1/2) (1/2)
                             })
               , ("M1-m", NS { name  = "mail"
@@ -65,14 +62,14 @@ scratchpads = [ ("M1-x", NS { name  = "ossxmix"
 
 withScratchpads :: [(String, NamedScratchpad)] -> XConfig l -> XConfig l
 withScratchpads sps conf@XConfig { manageHook = mHook } = conf
-    { manageHook = mHook <+> namedScratchpadManageHook list } `additionalKeysP` keys
+    { manageHook = mHook <+> namedScratchpadManageHook l } `additionalKeysP` ks
 
     where
-        list :: [NamedScratchpad]
-        list = map snd sps
+        l :: [NamedScratchpad]
+        l = map snd sps
 
-        keys :: [(String, X ())]
-        keys = map (second (namedScratchpadAction list . name)) sps
+        ks :: [(String, X ())]
+        ks = map (second (namedScratchpadAction l . name)) sps
 
 
 -- | The unexported X.H.DynamicLog.toggleStrutsKey
