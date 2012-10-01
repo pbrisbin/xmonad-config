@@ -1,35 +1,7 @@
-# My xmonad configuration
+# Old Master
 
-Very stock but with a few tasteful tweaks. Most of the config actually 
-lies withing the Utils module.
+This branch is meant for those that are looking for some specific hacks 
+and/or modules I used to have in my XMonad config.
 
-### Custom modules
-
-* Dzen: Easier dzen definitions
-* ScratchPadKeys: Importable scratchpads
-
-Other modules exist in `./lib` which I no longer use.
-
-### Compiles on
-
-* ghc 6 or 7
-* xmonad 0.9 or darcs
-* xmonad-contrib 0.9 or darcs
-
-### Try it
-
-Backup your original configuration:
-
-    mv ~/.xmonad ~/xmonad.bak
-
-Pull down mine:
-
-    git clone git://github.com/pbrisbin/xmonad-config.git ~/.xmonad
-
-Verify everything compiles before actually restarting:
-
-    cd ~/.xmonad && ghci -ilib xmonad.hs
-
-This will notify you of any problems.
-
-Press `Ctrl-d` to exit ghci, then `M-q` to restart xmonad.
+I've since stripped out a lot of the bloat and (happily) run with a much 
+more stock system requiring far less configuration.
