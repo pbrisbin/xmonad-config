@@ -11,10 +11,7 @@ import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.UrgencyHook
 import XMonad.Util.EZConfig
-import XMonad.Util.NamedScratchpad
 import XMonad.Util.WorkspaceCompare
-import XMonad.StackSet (RationalRect(..))
-import Control.Arrow (second)
 
 main :: IO ()
 main = do
@@ -23,12 +20,9 @@ main = do
                     { ppHidden = pad
                     , ppTitle  = pad . dzenColor "#bbb" "" . dzenEscape
                     , ppLayout = const ""
-                    , ppSort   = do
-                        xsort <- getSortByXineramaRule
-                        return (xsort . namedScratchpadFilterOutWorkspace)
+                    , ppSort   = getSortByXineramaRule
                     }
                 toggleStrutsKey
-                $ withScratchpads scratchpads
                 $ withUrgencyHook NoUrgencyHook
                 $ defaultConfig
                     { terminal   = "urxvtc"
@@ -41,36 +35,12 @@ main = do
                     `additionalKeysP`
                         [ ("M-p", spawn "x=$(yeganesh -x -- $DMENU_OPTIONS) && exec $x")
                         , ("M-q", spawn "killall dzen2; xmonad --recompile && xmonad --restart")
+                        , ("<XF86AudioRaiseVolume>", spawn "amixer sset Master 3%+")
+                        , ("<XF86AudioLowerVolume>", spawn "amixer sset Master 3%-")
+                        , ("<XF86AudioMute>",        spawn "amixer sset Master toggle")
                         ]
 
     xmonad conf
-
-
-scratchpads :: [(String, NamedScratchpad)]
-scratchpads = [ ("M1-x", NS { name  = "alsamixer"
-                            , cmd   = "urxvtc -name sp-alsamixer -e alsamixer"
-                            , query = resource =? "sp-alsamixer"
-                            , hook  = customFloating $ RationalRect (1/20) (1/10) (1/2) (1/2)
-                            })
-              , ("M1-m", NS { name  = "mail"
-                            , cmd   = "urxvtc -name sp-mail -e mutt"
-                            , query = resource =? "sp-mail"
-                            , hook  = customFloating $ RationalRect (1/10) (1/5) (1/2) (1/2)
-                            })
-              ]
-
-
-withScratchpads :: [(String, NamedScratchpad)] -> XConfig l -> XConfig l
-withScratchpads sps conf@XConfig { manageHook = mHook } = conf
-    { manageHook = mHook <+> namedScratchpadManageHook l } `additionalKeysP` ks
-
-    where
-        l :: [NamedScratchpad]
-        l = map snd sps
-
-        ks :: [(String, X ())]
-        ks = map (second (namedScratchpadAction l . name)) sps
-
 
 -- | The unexported X.H.DynamicLog.toggleStrutsKey
 toggleStrutsKey :: XConfig l -> (KeyMask, KeySym)
