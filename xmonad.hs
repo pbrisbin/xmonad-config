@@ -15,7 +15,7 @@ import XMonad.Util.WorkspaceCompare
 
 main :: IO ()
 main = do
-    conf <- statusBar "dzen2 -p -xs 1 -ta l -fn Verdana-8 -e 'onstart=lower'"
+    conf <- statusBar "dzen2 -p -xs 1 -ta l -fn Verdana-12 -e 'onstart=lower'"
                 dzenPP
                     { ppHidden = pad
                     , ppTitle  = pad . dzenColor "#bbb" "" . dzenEscape
