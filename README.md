@@ -7,7 +7,6 @@ Very stock, with some minor tweaks.
 
 -   dzen status bar
 -   urxvtc as terminal
--   Super as modifier
 -   Full-screen manage hook fix
 -   Media keys support
 -   Yeganesh app launcher
@@ -20,7 +19,6 @@ Very stock, with some minor tweaks.
 ## Installation
 
 ~~~
-$ cd
-$ mv .xmonad{,.bak}
-$ git clone https://github.com/pbrisbin/xmonad-config .xmonad
+$ mv ~/.xmonad{,.bak}
+$ git clone https://github.com/pbrisbin/xmonad-config ~/.xmonad
 ~~~
