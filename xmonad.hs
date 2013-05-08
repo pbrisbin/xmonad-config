@@ -33,7 +33,7 @@ main = do
                         ]
                     }
                     `additionalKeysP`
-                        [ ("M-p", spawn "x=$(yeganesh -x -- $DMENU_OPTIONS) && exec $x")
+                        [ ("M-p", spawn "x=$(yeganesh -x -- -i -fn Verdana-12) && exec $x")
                         , ("M-q", spawn "killall dzen2; xmonad --recompile && xmonad --restart")
                         , ("<XF86AudioRaiseVolume>", spawn "amixer sset Master 3%+")
                         , ("<XF86AudioLowerVolume>", spawn "amixer sset Master 3%-")
