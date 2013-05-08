@@ -26,7 +26,6 @@ main = do
                 $ withUrgencyHook NoUrgencyHook
                 $ defaultConfig
                     { terminal   = "urxvtc"
-                    , modMask    = mod4Mask
                     , manageHook = composeAll
                         [ isFullscreen --> doFullFloat
                         , manageHook defaultConfig
