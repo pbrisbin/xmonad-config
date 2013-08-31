@@ -1,3 +1,10 @@
+*NOTE: My XMonad configuration has been moved in with my main 
+[dotfiles][] repo. Any future updates will occur there.*
+
+[dotfiles]: https://github.com/pbrisbin/dotfiles
+
+---
+
 My xmonad configuration
 =======================
 
